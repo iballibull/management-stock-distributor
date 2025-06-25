@@ -1,7 +1,7 @@
 @extends('layouts.guest', ['metaTitle' => 'Login'])
 @section('content')
     <section class="bg-gray-50 dark:bg-gray-900">
-        <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
+        <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto h-screen lg:py-0">
             <div
                 class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
                 <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
@@ -52,13 +52,13 @@
                                 <div class="flex items-center h-5">
                                     <input id="remember" aria-describedby="remember" type="checkbox"
                                         class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
-                                        required="" value="true">
+                                        value="1">
                                 </div>
                                 <div class="ml-3 text-sm">
-                                    <label for="remember" class="text-gray-500 dark:text-gray-300">Remember me</label>
+                                    <label for="remember" class="text-gray-500 dark:text-gray-300">Ingat saya</label>
                                 </div>
                             </div>
-                            <a href="#"
+                            <a href="{{ route('password.request') }}"
                                 class="text-sm font-medium text-blue-600 hover:underline dark:text-blue-500">Lupa
                                 password?</a>
                         </div>
