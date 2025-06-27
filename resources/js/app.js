@@ -1,6 +1,7 @@
 import "./bootstrap";
 import "flowbite";
 import "./sidebar.js";
+import "./swal.js";
 
 import Alpine from "alpinejs";
 

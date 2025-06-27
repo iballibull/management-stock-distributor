@@ -12,22 +12,24 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-gray-50 dark:bg-gray-800">
+<body class="bg-gray-50 dark:bg-gray-800" data-success="{{ e(session('success')) }}"
+    data-failed="{{ e(session('failed')) }}">
     @include('layouts.navbars.navigation')
     <div class="flex pt-16 overflow-hidden bg-gray-50 dark:bg-gray-900">
         @include('layouts.navbars.sidebar')
 
+        <!-- Page Content -->
         <div id="main-content" class="relative w-full h-full overflow-y-auto bg-gray-50 lg:ml-64 dark:bg-gray-900">
-            <!-- Page Content -->
             <main>
                 <div class="px-4 pt-6">
-                    @yield('content')
+                    <div class="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
+                        @yield('content')
+                    </div>
                 </div>
             </main>
             @include('layouts.footers.footer')
         </div>
     </div>
-
 </body>
 
 </html>

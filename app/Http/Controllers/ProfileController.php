@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
+use App\Http\Requests\ProfileUpdateRequest;
+use Str;
 
 class ProfileController extends Controller
 {
@@ -26,16 +28,45 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        try {
+            $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+            // Validasi seluruh input (termasuk validasi photo)
+            $validated = $request->validated();
+
+            // Handle file photo jika ada
+            if ($request->hasFile('photo')) {
+                $photo = $request->file('photo');
+
+                // Hapus foto lama 
+                if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+                    Storage::disk('public')->delete($user->photo);
+                }
+
+                // Simpan file baru 
+                $filename = now()->format('Ymd_His') . '_' . Str::uuid() . '.' . $photo->getClientOriginalExtension();
+                $path = $photo->storeAs('photos', $filename, 'public');
+
+                // Masukkan path foto ke data validated
+                $validated['photo'] = $path;
+            }
+
+            // Assign data user
+            $user->fill($validated);
+
+            if ($user->isDirty('email')) {
+                $user->email_verified_at = null;
+            }
+
+            // 7. Simpan user
+            $user->save();
+
+            return Redirect::route('profile.edit')->with('success', 'Profile berhasil di update');
+        } catch (\Throwable $th) {
+            return Redirect::route('profile.edit')->with('failed', $th->getMessage());
         }
-
-        $request->user()->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
+
 
     /**
      * Delete the user's account.
