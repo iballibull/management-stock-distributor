@@ -49,19 +49,36 @@ class RegisteredUserController extends Controller
                 ->where('used', false)
                 ->firstOrFail();
 
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $invite->email,
-                'password' => Hash::make($request->password),
-                'role_id' => $invite->role_id,
-            ]);
+            $user = User::withTrashed()->where('email', $invite->email)->first();
+
+            // jika user sebelumnya ada dan sudah dihapus 
+            if ($user) {
+                // update data dengan data terbaru 
+                $user->name = $request->name;
+                $user->password = Hash::make($request->password);
+                $user->role_id = $invite->role_id;
+
+                // user kembali di aktifkan
+                if ($user->trashed()) {
+                    $user->restore();
+                }
+
+                $user->save();
+            } else {
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $invite->email,
+                    'password' => Hash::make($request->password),
+                    'role_id' => $invite->role_id,
+                ]);
+            }
 
             $invite->update(['used' => true]);
 
             event(new Registered($user));
             Auth::login($user);
 
-            return redirect(route('dashboard', absolute: false));
+            return redirect(route('dashboard'));
         } catch (\Throwable $th) {
             return back()->with('failed', $th->getMessage());
         }
