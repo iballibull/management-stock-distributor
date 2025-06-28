@@ -1,20 +1,23 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\InviteUserController;
-use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile', [App\Http\Controllers\User\ProfileController::class, 'edit'])->name('user.edit');
+    Route::patch('/profile', [App\Http\Controllers\User\ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [App\Http\Controllers\User\ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/invite', [InviteUserController::class, 'create'])->name('invite.create');
-    Route::post('/invite', [InviteUserController::class, 'store'])->name('invite.store');
+    Route::get('/invite', [App\Http\Controllers\Auth\InviteUserController::class, 'create'])->name('invite.create');
+    Route::post('/invite', [App\Http\Controllers\Auth\InviteUserController::class, 'store'])->name('invite.store');
+
+    Route::get('/users', [App\Http\Controllers\User\UserController::class, 'index'])->name('user.index');
+    Route::put('/users/{userId}/update', [App\Http\Controllers\User\UserController::class, 'update'])->name('user.update');
+
+    Route::get('/roles', [App\Http\Controllers\User\RoleController::class, 'index'])->name('user.role');
 });
 
 require __DIR__ . '/auth.php';

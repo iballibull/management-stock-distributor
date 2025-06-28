@@ -1,15 +1,16 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\User;
 
+use Str;
 use Illuminate\View\View;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Redirect;
-use App\Http\Requests\Pofile\ProfileUpdateRequest;
-use Str;
+use App\Http\Requests\Profile\ProfileUpdateRequest;
 
 class ProfileController extends Controller
 {
@@ -18,7 +19,7 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
-        return view('profile.edit', [
+        return view('user.edit', [
             'user' => $request->user(),
         ]);
     }
@@ -61,9 +62,9 @@ class ProfileController extends Controller
             // Simpan user
             $user->save();
 
-            return Redirect::route('profile.edit')->with('success', 'Profile berhasil di update');
+            return Redirect::route('user.edit')->with('success', 'Profile berhasil di update');
         } catch (\Throwable $th) {
-            return Redirect::route('profile.edit')->with('failed', $th->getMessage());
+            return Redirect::route('user.edit')->with('failed', $th->getMessage());
         }
     }
 
