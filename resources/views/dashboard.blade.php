@@ -1,4 +1,4 @@
-@extends('layouts.app', ['metaTitle' => 'Dashboard'])
+@extends('layouts.app', ['metaTitle' => 'Dashboard', 'parentSection' => '', 'elementName' => ''])
 
 @section('content')
     @component('layouts.headers.breadcrumbs')

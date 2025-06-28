@@ -58,7 +58,7 @@ class ProfileController extends Controller
                 $user->email_verified_at = null;
             }
 
-            // 7. Simpan user
+            // Simpan user
             $user->save();
 
             return Redirect::route('profile.edit')->with('success', 'Profile berhasil di update');

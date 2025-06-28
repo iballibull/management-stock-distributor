@@ -1,4 +1,4 @@
-@extends('layouts.app', ['metaTitle' => 'Profile'])
+@extends('layouts.app', ['metaTitle' => 'Profile', 'parentSection' => '', 'elementName' => ''])
 @section('content')
     @component('layouts.headers.breadcrumbs')
         <li>
@@ -8,7 +8,9 @@
                         d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
                         clip-rule="evenodd"></path>
                 </svg>
-                <span class="ml-1 text-gray-400 md:ml-2 dark:text-gray-500" aria-current="page">Profile</span>
+                <a href="{{ route('profile.edit') }}"><span
+                        class="ml-1 text-gray-400 md:ml-2 dark:text-gray-500 hover:text-blue-600"
+                        aria-current="page">Profile</span></a>
             </div>
         </li>
     @endcomponent
@@ -19,8 +21,8 @@
                 <h3 class="text-xl font-semibold dark:text-white">Profile</h3>
             </div>
             <div class="flex justify-center items-center h-40">
-                <img class="w-32 h-32 rounded-full object-cover" src="{{ asset('storage/' . $user->photo) }}"
-                    alt="foto-profile">
+                <img class="w-32 h-32 rounded-full object-cover bg-gray-100"
+                    src="{{ asset('storage/' . (Auth::user()->photo ?? 'photos/default.png')) }}" alt="foto-profile">
             </div>
 
             <div class="flex justify-center">

@@ -17,34 +17,27 @@
                             clip-rule="evenodd"></path>
                     </svg>
                 </button>
-                <a href="https://flowbite-admin-dashboard.vercel.app/" class="flex ml-2 md:mr-24">
+                <a href="/" class="flex ml-2 md:mr-24">
                     <img src="https://flowbite-admin-dashboard.vercel.app/images/logo.svg" class="h-8 mr-3"
-                        alt="FlowBite Logo">
-                    <span
-                        class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">Flowbite</span>
+                        alt="Logo">
+                    <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">
+                        Inti Bina Ilmu</span>
                 </a>
             </div>
             <div class="flex items-center">
                 <div class="hidden mr-3 -mb-1 sm:block">
                     <span></span>
                 </div>
-                <div id="tooltip-toggle" role="tooltip"
-                    class="absolute z-10 inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm tooltip opacity-0 invisible"
-                    style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(1092.5px, 63px, 0px);"
-                    data-popper-placement="bottom">
-                    Toggle dark mode
-                    <div class="tooltip-arrow" data-popper-arrow=""
-                        style="position: absolute; left: 0px; transform: translate3d(68.5px, 0px, 0px);"></div>
-                </div>
 
                 <div class="flex items-center ml-3">
                     <div>
                         <button type="button"
-                            class="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
+                            class="flex text-sm bg-gray-100 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
                             id="user-menu-button-2" aria-expanded="false" data-dropdown-toggle="dropdown-2">
-                            <span class="sr-only">Open user menu</span>
+                            <span class="sr-only">User Menu</span>
                             <img class="w-8 h-8 rounded-full"
-                                src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="user photo">
+                                src="{{ asset('storage/' . (Auth::user()->photo ?? 'photos/default.png')) }}"
+                                alt="user photo">
                         </button>
                     </div>
 
