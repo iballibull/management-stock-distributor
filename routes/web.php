@@ -29,6 +29,11 @@ Route::middleware('auth')->group(function () {
         Route::put('/categories/{categoryId}/update', [App\Http\Controllers\Book\CategoryController::class, 'update'])->name('category.update');
         Route::delete('/categories/{categoryId}/delete', [App\Http\Controllers\Book\CategoryController::class, 'destroy'])->name('category.destroy');
 
+        Route::get('/curriculums', [App\Http\Controllers\Book\CurriculumController::class, 'index'])->name('curriculum.index');
+        Route::post('/curriculums', [App\Http\Controllers\Book\CurriculumController::class, 'store'])->name('curriculum.store');
+        Route::put('/curriculums/{curriculumId}/update', [App\Http\Controllers\Book\CurriculumController::class, 'update'])->name('curriculum.update');
+        Route::delete('/curriculums/{curriculumId}/delete', [App\Http\Controllers\Book\CurriculumController::class, 'destroy'])->name('curriculum.destroy');
+
     });
 });
 

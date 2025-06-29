@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Database\Seeders\Book\CurriculumSeeder;
 use Illuminate\Database\Seeder;
 use Database\Seeders\User\RoleSeeder;
 use Database\Seeders\User\UserSeeder;
@@ -25,7 +26,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
-            CategorySeeder::class
+            CategorySeeder::class,
+            CurriculumSeeder::class
         ]);
     }
 }

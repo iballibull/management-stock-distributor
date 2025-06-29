@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Book;
 
+use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\Book\Category;
@@ -19,7 +20,7 @@ class CategoryController extends Controller
             ->when($request->input('search'), function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%");
             })->latest()
-            ->paginate(10);
+            ->paginate(10)->appends($request->query());
 
         return view('book.category', compact('categories'));
     }
@@ -31,20 +32,27 @@ class CategoryController extends Controller
                 'name' => 'required|string|max:255'
             ]);
 
-            $name = $request->input('name');
-            $upperName = Str::upper($name);
+            $upperName = Str::upper($request->input('name'));
 
-            // Cari termasuk yang soft deleted
-            $existing = Category::withTrashed()->where('name', $upperName)->first();
+            // Cek apakah nama sudah digunakan (termasuk yang soft deleted)
+            $existing = Category::withTrashed()
+                ->where('name', $upperName)
+                ->first();
 
-            // Pulihkan jika data ada sebelumnya
             if ($existing) {
-                $existing->restore();
-                $existing->update([
-                    'name' => $upperName,
-                    'created_at' => now()
-                ]);
+                if ($existing->trashed()) {
+                    // Restore dan update waktu
+                    $existing->restore();
+                    $existing->update([
+                        'name' => $upperName,
+                        'created_at' => now()
+                    ]);
+                } else {
+                    // Sudah ada dan aktif
+                    throw new \Exception('Nama kategori sudah digunakan.');
+                }
             } else {
+                // Data benar-benar baru
                 Category::create(['name' => $upperName]);
             }
 
@@ -73,10 +81,22 @@ class CategoryController extends Controller
                 'name' => 'required|string|max:255'
             ]);
 
+            $upperName = Str::upper($request->input('name'));
+
             $category = Category::findOrFail($categoryId);
 
+            // Cek apakah nama sudah digunakan oleh kurikulum lain
+            $alreadyUsed = Category::withTrashed()
+                ->where('name', $upperName)
+                ->where('id', '!=', $categoryId)
+                ->first();
+
+            if ($alreadyUsed) {
+                throw new Exception('Nama kategori sudah digunakan.');
+            }
+
             $category->update([
-                'name' => Str::upper($request->input('name'))
+                'name' => $upperName
             ]);
 
             return back()->with('success', 'Kategori berhasil diupdate');
