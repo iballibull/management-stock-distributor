@@ -21,6 +21,15 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/roles', [App\Http\Controllers\User\RoleController::class, 'index'])->name('user.role');
     });
+
+    // Route untuk Owner dan Admin
+    Route::middleware('role:1,2')->group(function () {
+        Route::get('/categories', [App\Http\Controllers\User\RoleController::class, 'index'])->name('category.index');
+        Route::post('/categories', [App\Http\Controllers\User\RoleController::class, 'store'])->name('category.store');
+        Route::put('/categories/{categoryId}/update', [App\Http\Controllers\User\RoleController::class, 'update'])->name('category.update');
+        Route::delete('/categories/{categoryId}/delete', [App\Http\Controllers\User\RoleController::class, 'destroy'])->name('category.destroy');
+
+    });
 });
 
 require __DIR__ . '/auth.php';

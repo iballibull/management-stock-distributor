@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Books;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Role extends Model
+class Category extends Model
 {
     //
 }
