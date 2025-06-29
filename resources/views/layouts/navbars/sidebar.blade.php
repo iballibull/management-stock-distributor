@@ -177,58 +177,59 @@
                         </a>
                     </li>
 
-                    @php
-                        $isUserManajemenActive = $parentSection === 'userManagement';
-                    @endphp
+                    @role('1')
+                        @php
+                            $isUserManajemenActive = $parentSection === 'userManagement';
+                        @endphp
 
-                    <li>
-                        <button type="button" @click="open = !open"
-                            class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
-                            aria-controls="dropdown-user-manajemen" data-collapse-toggle="dropdown-user-manajemen">
+                        <li>
+                            <button type="button" @click="open = !open"
+                                class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                aria-controls="dropdown-user-manajemen" data-collapse-toggle="dropdown-user-manajemen">
 
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                                class="size-6 group-hover:text-gray-900 {{ $isUserManajemenActive ? 'text-gray-900' : 'text-gray-500' }}">
-                                <path fill-rule="evenodd"
-                                    d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
-                                    clip-rule="evenodd" />
-                            </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                                    class="size-6 group-hover:text-gray-900 {{ $isUserManajemenActive ? 'text-gray-900' : 'text-gray-500' }}">
+                                    <path fill-rule="evenodd"
+                                        d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
+                                        clip-rule="evenodd" />
+                                </svg>
 
-                            <span class="flex-1 ml-3 text-left whitespace-nowrap">User Manajemen</span>
+                                <span class="flex-1 ml-3 text-left whitespace-nowrap">User Manajemen</span>
 
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                        </button>
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
 
-                        <ul id="dropdown-user-manajemen" x-show="{{ $isUserManajemenActive ? 'true' : 'false' }}"
-                            x-transition class="py-2 space-y-2 {{ $isUserManajemenActive ? '' : 'hidden' }}">
+                            <ul id="dropdown-user-manajemen" x-show="{{ $isUserManajemenActive ? 'true' : 'false' }}"
+                                x-transition class="py-2 space-y-2 {{ $isUserManajemenActive ? '' : 'hidden' }}">
 
-                            <li>
-                                <a href="{{ route('user.index') }}"
-                                    class="flex items-center p-2 text-base rounded-lg pl-11 group transition duration-75 text-gray-900
+                                <li>
+                                    <a href="{{ route('user.index') }}"
+                                        class="flex items-center p-2 text-base rounded-lg pl-11 group transition duration-75 text-gray-900
                 {{ $elementName === 'user' ? 'bg-gray-100' : ' hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700' }}">
-                                    Daftar User
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('invite.create') }}"
-                                    class="flex items-center p-2 text-base rounded-lg pl-11 group transition duration-75
+                                        Daftar User
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('invite.create') }}"
+                                        class="flex items-center p-2 text-base rounded-lg pl-11 group transition duration-75
                 {{ $elementName === 'addUser' ? 'bg-gray-100' : 'text-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700' }}">
-                                    Tambah User
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('user.role') }}"
-                                    class="flex items-center p-2 text-base rounded-lg pl-11 group transition duration-75
+                                        Tambah User
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('user.role') }}"
+                                        class="flex items-center p-2 text-base rounded-lg pl-11 group transition duration-75
                 {{ $elementName === 'role' ? 'bg-gray-100' : 'text-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700' }}">
-                                    Role
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
+                                        Role
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    @endrole
                 </ul>
             </div>
         </div>
