@@ -32,7 +32,7 @@ class UserController extends Controller
             ]);
 
             // Ambil user yang ingin diubah
-            $user = User::findOrFail($userId);
+            $user = User::withTrashed()->findOrFail($userId);
 
             // Cegah owner mengubah dirinya sendiri
             if ($user->role_id == 1 && Auth::id() === $user->id) {
