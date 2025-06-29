@@ -1,42 +1,35 @@
 <?php
 
-namespace Database\Seeders;
+namespace Database\Seeders\User;
 
-use App\Models\User\User;
+use App\Models\User\Role;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-class UserSeeder extends Seeder
+class RoleSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        User::insert([
+        Role::insert([
             [
                 'name' => 'Owner',
-                'password' => Hash::make('password'),
-                'email' => 'owner@gmail.com',
-                'role_id' => 1,
+                'description' => 'Digunakan untuk pemilik bisnis',
                 'created_at' => Date::now(),
                 'updated_at' => Date::now(),
             ],
             [
                 'name' => 'Admin',
-                'password' => Hash::make('password'),
-                'email' => 'admin@gmail.com',
-                'role_id' => 2,
+                'description' => 'Digunakan untuk admin kantor',
                 'created_at' => Date::now(),
                 'updated_at' => Date::now(),
             ],
             [
                 'name' => 'Sales',
-                'password' => Hash::make('password'),
-                'email' => 'sales@gmail.com',
-                'role_id' => 3,
+                'description' => 'Digunakan untuk sales',
                 'created_at' => Date::now(),
                 'updated_at' => Date::now(),
             ]
