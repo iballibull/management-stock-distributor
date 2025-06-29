@@ -34,6 +34,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/curriculums/{curriculumId}/update', [App\Http\Controllers\Book\CurriculumController::class, 'update'])->name('curriculum.update');
         Route::delete('/curriculums/{curriculumId}/delete', [App\Http\Controllers\Book\CurriculumController::class, 'destroy'])->name('curriculum.destroy');
 
+        Route::get('/education-levels', [App\Http\Controllers\Book\EducationLevelController::class, 'index'])->name('education.level.index');
+        Route::post('/education-levels', [App\Http\Controllers\Book\EducationLevelController::class, 'store'])->name('education.level.store');
+        Route::put('/education-levels/{educationLevelId}/update', [App\Http\Controllers\Book\EducationLevelController::class, 'update'])->name('education.level.update');
+        Route::delete('/education-levels/{educationLevelId}/delete', [App\Http\Controllers\Book\EducationLevelController::class, 'destroy'])->name('education.level.destroy');
     });
 });
 

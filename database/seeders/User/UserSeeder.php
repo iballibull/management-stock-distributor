@@ -3,6 +3,7 @@
 namespace Database\Seeders\User;
 
 use App\Models\User\User;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Hash;
@@ -15,31 +16,36 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::insert([
+        $now = Carbon::now();
+        $password = Hash::make('password');
+
+        $data = [
             [
                 'name' => 'Owner',
-                'password' => Hash::make('password'),
+                'password' => $password,
                 'email' => 'owner@gmail.com',
                 'role_id' => 1,
-                'created_at' => Date::now(),
-                'updated_at' => Date::now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
                 'name' => 'Admin',
-                'password' => Hash::make('password'),
+                'password' => $password,
                 'email' => 'admin@gmail.com',
                 'role_id' => 2,
-                'created_at' => Date::now(),
-                'updated_at' => Date::now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
                 'name' => 'Sales',
-                'password' => Hash::make('password'),
+                'password' => $password,
                 'email' => 'sales@gmail.com',
                 'role_id' => 3,
-                'created_at' => Date::now(),
-                'updated_at' => Date::now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ]
-        ]);
+        ];
+
+        User::insert($data);
     }
 }

@@ -3,6 +3,7 @@
 namespace Database\Seeders\Book;
 
 use App\Models\Book\Curriculum;
+use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,17 +14,21 @@ class CurriculumSeeder extends Seeder
      */
     public function run(): void
     {
-        Curriculum::insert([
+        $now = Carbon::now();
+
+        $data = [
             [
                 'name' => 'KURIKULUM MERDEKA',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
                 'name' => 'KURIKULUM 2013',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ]
-        ]);
+        ];
+
+        Curriculum::insert($data);
     }
 }

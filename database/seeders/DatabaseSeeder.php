@@ -3,11 +3,12 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Database\Seeders\Book\CurriculumSeeder;
+use Database\Seeders\Book\EducationLevelSeeder;
 use Illuminate\Database\Seeder;
 use Database\Seeders\User\RoleSeeder;
 use Database\Seeders\User\UserSeeder;
 use Database\Seeders\Book\CategorySeeder;
+use Database\Seeders\Book\CurriculumSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -27,7 +28,8 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UserSeeder::class,
             CategorySeeder::class,
-            CurriculumSeeder::class
+            CurriculumSeeder::class,
+            EducationLevelSeeder::class
         ]);
     }
 }
