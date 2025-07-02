@@ -13,6 +13,9 @@
             </div>
         </li>
     @endcomponent
+    @php
+        $user = Auth::user();
+    @endphp
     <div class="col-span-full flex gap-4  items-stretch xl:col-auto">
         <div
             class="p-4 mb-4 bg-white border w-full border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
@@ -21,14 +24,14 @@
             </div>
             <div class="flex justify-center items-center h-40">
                 <img class="w-32 h-32 rounded-full object-cover bg-gray-100"
-                    src="{{ asset('storage/' . (Auth::user()->photo ?? 'photos/default.png')) }}" alt="foto-profile">
+                    src="{{ asset('storage/' . ($user->photo ?? 'photos/default.png')) }}" alt="foto-profile">
             </div>
 
             <div class="flex justify-center">
-                <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">{{ Auth::user()->name }}</h5>
+                <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">{{ $user->name }}</h5>
             </div>
             <div class="flex justify-center">
-                <span class="text-sm text-gray-500 dark:text-gray-400">{{ Auth::user()->email }}</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ $user->email }}</span>
             </div>
         </div>
     </div>
@@ -46,14 +49,14 @@
                             Nama <span class="text-red-500">*</span></label>
                         <input type="text" name="name" id="name"
                             class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            required value="{{ Auth::user()->name }}" autocomplete="off">
+                            required value="{{ $user->name }}" autocomplete="off">
                     </div>
                     <div class="col-span-6 sm:col-span-3">
                         <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                             Email <span class="text-red-500">*</span></label>
                         <input type="email" name="email" id="email"
                             class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            required value="{{ Auth::user()->email }}" autocomplete="off">
+                            required value="{{ $user->email }}" autocomplete="off">
                     </div>
                     <div class="col-span-6 sm:col-span-3">
                         <label for="file_input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -90,33 +93,60 @@
             <div class="grid grid-cols-6 gap-6">
                 <div class="col-span-6 sm:col-span-3">
                     <label for="current-password"
-                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password
-                        sekarang <span class="text-red-500">*</span></label>
+                        class="{{ $errors->updatePassword->has('current_password') ? 'block mb-2 text-sm font-medium text-red-700 dark:text-red-500' : 'block mb-2 text-sm font-medium text-gray-900 dark:text-white' }}">
+                        Password sekarang <span class="text-red-500">*</span>
+                    </label>
                     <input type="password" name="current_password" id="current-password"
-                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        placeholder="••••••••" required autocomplete="off">
+                        class="{{ $errors->updatePassword->has('current_password') ? 'bg-red-50 border border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500' : 'bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500' }} shadow-sm sm:text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="••••••••" required autocomplete="current-password">
+                    @if ($errors->updatePassword->has('current_password'))
+                        <p class="mt-2 text-sm text-red-600 dark:text-red-500">
+                            <span class="font-medium">{{ $errors->updatePassword->first('current_password') }}</span>
+                        </p>
+                    @endif
                 </div>
+
                 <div class="col-span-6 sm:col-span-3">
-                    <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password
-                        baru <span class="text-red-500">*</span></label>
-                    <input type="password" id="password"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        placeholder="••••••••" required autocomplete="off" name="password">
+                    <label for="password"
+                        class="{{ $errors->updatePassword->has('password') ? 'block mb-2 text-sm font-medium text-red-700 dark:text-red-500' : 'block mb-2 text-sm font-medium text-gray-900 dark:text-white' }}">
+                        Password baru <span class="text-red-500">*</span>
+                    </label>
+                    <input type="password" id="password" name="password"
+                        class="{{ $errors->updatePassword->has('password') ? 'bg-red-50 border border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500' : 'bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500' }} shadow-sm sm:text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="••••••••" required autocomplete="new-password">
+                    @if (
+                        $errors->updatePassword->has('password') &&
+                            (!str_contains($errors->updatePassword->first('password'), 'Konfirmasi') &&
+                                !str_contains($errors->updatePassword->first('password'), 'Confirmation')))
+                        <p class="mt-2 text-sm text-red-600 dark:text-red-500">
+                            <span class="font-medium">{{ $errors->updatePassword->first('password') }}</span>
+                        </p>
+                    @endif
                 </div>
+
                 <div class="col-span-6 sm:col-span-3">
                     <label for="password_confirmation"
-                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Konfirmasi
-                        password <span class="text-red-500">*</span></label>
-                    <input type="password" name="password_confirmation" id="password_confirmation" autocomplete="off"
-                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        placeholder="••••••••" required>
+                        class="{{ $errors->updatePassword->has('password') ? 'block mb-2 text-sm font-medium text-red-700 dark:text-red-500' : 'block mb-2 text-sm font-medium text-gray-900 dark:text-white' }}">
+                        Konfirmasi password <span class="text-red-500">*</span>
+                    </label>
+                    <input type="password" name="password_confirmation" id="password_confirmation"
+                        class="{{ $errors->updatePassword->has('password') ? 'bg-red-50 border border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500' : 'bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500' }} shadow-sm sm:text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="••••••••" required autocomplete="new-password">
+                    @if (
+                        $errors->updatePassword->has('password') &&
+                            (str_contains($errors->updatePassword->first('password'), 'Konfirmasi') ||
+                                str_contains($errors->updatePassword->first('password'), 'Confirmation')))
+                        <p class="mt-2 text-sm text-red-600 dark:text-red-500">
+                            <span class="font-medium">{{ $errors->updatePassword->first('password') }}</span>
+                        </p>
+                    @endif
                 </div>
-                <div class="col-span-6 sm:col-full flex justify-end">
+
+                <div class="col-span-6 flex justify-end">
                     <button
                         class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                         type="submit">Ubah Password</button>
                 </div>
             </div>
-        </form>
     </div>
 @endsection

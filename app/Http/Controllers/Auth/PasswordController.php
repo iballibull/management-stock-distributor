@@ -16,19 +16,15 @@ class PasswordController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
-        try {
-            $validated = $request->validateWithBag('updatePassword', [
-                'current_password' => ['required', 'current_password'],
-                'password' => ['required', Password::defaults(), 'confirmed'],
-            ]);
+        $validated = $request->validateWithBag('updatePassword', [
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', Password::defaults(), 'confirmed'],
+        ]);
 
-            $request->user()->update([
-                'password' => Hash::make($validated['password']),
-            ]);
+        $request->user()->update([
+            'password' => Hash::make($validated['password']),
+        ]);
 
-            return back()->with('success', 'Password berhasil di update');
-        } catch (Throwable $th) {
-            return back()->with('failed', $th->getMessage());
-        }
+        return back()->with('success', 'Password berhasil di update');
     }
 }

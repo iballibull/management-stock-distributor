@@ -43,19 +43,13 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $user = User::where('email', $this->email)
-            ->whereNull('deleted_at')
-            ->first();
-
-        if (!$user || !Hash::check($this->password, $user->password)) {
+        if (!Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => 'Email atau password salah.',
+                'email' => __('auth.failed'),
             ]);
         }
-
-        Auth::login($user, $this->boolean('remember'));
 
         RateLimiter::clear($this->throttleKey());
     }

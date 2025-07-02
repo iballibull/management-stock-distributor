@@ -22,39 +22,34 @@ class InviteUserController extends Controller
 
     public function store(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'email' => [
-                    'required',
-                    'email',
-                    Rule::unique('users', 'email')->whereNull('deleted_at'),
-                ],
-                'role_id' => ['required', 'exists:roles,id'],
-            ], [
-                'email.unique' => 'Email sudah digunakan.',
-            ]);
+        $validated = $request->validate([
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')->whereNull('deleted_at'),
+            ],
+            'role_id' => ['required', 'exists:roles,id'],
+        ], [
+            'email.unique' => 'Email sudah digunakan.',
+        ]);
 
-            $token = Str::uuid();
+        $token = Str::uuid();
 
-            // Ketika ada user yang sebelumnya dihapus kemudian mendaftar lagi maka akan mengupdate data invite user tersebut
-            // Jika tidak ada user sebelumnya maka data invite akan di buat
-            $invite = Invite::updateOrCreate(
-                ['email' => $validated['email']],
-                [
-                    'role_id' => $validated['role_id'],
-                    'token' => $token,
-                    'used' => false,
-                ]
-            );
+        // Ketika ada user yang sebelumnya dihapus kemudian mendaftar lagi maka akan mengupdate data invite user tersebut
+        // Jika tidak ada user sebelumnya maka data invite akan di buat
+        $invite = Invite::updateOrCreate(
+            ['email' => $validated['email']],
+            [
+                'role_id' => $validated['role_id'],
+                'token' => $token,
+                'used' => false,
+            ]
+        );
 
-            // Kirim notifikasi email
-            Notification::route('mail', $invite->email)
-                ->notify(new InviteUserNotification($token));
+        // Kirim notifikasi email
+        Notification::route('mail', $invite->email)
+            ->notify(new InviteUserNotification($token));
 
-            return redirect()->back()->with('success', 'Undangan telah dikirim.');
-        } catch (\Throwable $th) {
-            return redirect()->back()->with('failed', $th->getMessage());
-        }
+        return redirect()->back()->with('success', 'Undangan telah dikirim.');
     }
-
 }

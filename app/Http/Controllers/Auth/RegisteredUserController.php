@@ -39,48 +39,45 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request, $token): RedirectResponse
     {
-        try {
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            ]);
 
-            $invite = Invite::where('token', $token)
-                ->where('used', false)
-                ->firstOrFail();
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
 
-            $user = User::withTrashed()->where('email', $invite->email)->first();
+        $invite = Invite::where('token', $token)
+            ->where('used', false)
+            ->firstOrFail();
 
-            // jika user sebelumnya ada dan sudah dihapus 
-            if ($user) {
-                // update data dengan data terbaru 
-                $user->name = $request->name;
-                $user->password = Hash::make($request->password);
-                $user->role_id = $invite->role_id;
+        $user = User::withTrashed()->where('email', $invite->email)->first();
 
-                // user kembali di aktifkan
-                if ($user->trashed()) {
-                    $user->restore();
-                }
+        // jika user sebelumnya ada dan sudah dihapus 
+        if ($user) {
+            // update data dengan data terbaru 
+            $user->name = $request->name;
+            $user->password = Hash::make($request->password);
+            $user->role_id = $invite->role_id;
 
-                $user->save();
-            } else {
-                $user = User::create([
-                    'name' => $request->name,
-                    'email' => $invite->email,
-                    'password' => Hash::make($request->password),
-                    'role_id' => $invite->role_id,
-                ]);
+            // user kembali di aktifkan
+            if ($user->trashed()) {
+                $user->restore();
             }
 
-            $invite->update(['used' => true]);
-
-            event(new Registered($user));
-            Auth::login($user);
-
-            return redirect(route('dashboard'));
-        } catch (\Throwable $th) {
-            return back()->with('failed', $th->getMessage());
+            $user->save();
+        } else {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $invite->email,
+                'password' => Hash::make($request->password),
+                'role_id' => $invite->role_id,
+            ]);
         }
+
+        $invite->update(['used' => true]);
+
+        event(new Registered($user));
+        Auth::login($user);
+
+        return redirect(route('dashboard'));
     }
 }

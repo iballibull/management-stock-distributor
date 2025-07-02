@@ -28,25 +28,6 @@
                             </button>
                         </div>
                     @endif
-                    @if ($errors->has('email'))
-                        <div id="alert-2"
-                            class="flex items-center p-4 mb-4 text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
-                            role="alert">
-                            <div class="ms-3 text-sm font-medium">
-                                <span class="font-semibold">Gagal!</span> Email tidak diketahui.
-                            </div>
-                            <button type="button"
-                                class="ms-auto -mx-1.5 -my-1.5 bg-red-50 text-red-500 rounded-lg focus:ring-2 focus:ring-red-400 p-1.5 hover:bg-red-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700"
-                                data-dismiss-target="#alert-2" aria-label="Close">
-                                <span class="sr-only">Close</span>
-                                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 14 14">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                                </svg>
-                            </button>
-                        </div>
-                    @endif
                     <p class="text-gray-500 mt-0">
                         Lupa kata sandi? Tidak masalah. Cukup beri tahu kami alamat email
                         Anda, dan kami akan mengirimkan
@@ -70,9 +51,15 @@
                                     </svg>
                                 </div>
                                 <input type="email" id="email-address-icon"
-                                    class="bg-gray-50 border mb-8 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                    placeholder="nama@gmail.com" name="email" autocomplete="off">
+                                    class="{{ $errors->has('email') ? 'bg-red-50  border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 mb-2' : 'bg-gray-50 border-gray-300 text-gray-900 border  focus:ring-blue-500 focus:border-blue-500 mb-8' }} border text-sm rounded-lg block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                    placeholder="nama@gmail.com" name="email" autocomplete="off"
+                                    value="{{ old('email') }}">
                             </div>
+                            @error('email')
+                                <p class="mb-8 text-sm text-red-600 dark:text-red-500">
+                                    <span class="font-medium">{{ $message }}</span>
+                                </p>
+                            @enderror
                         </div>
                         <button type="submit"
                             class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Kirim</button>

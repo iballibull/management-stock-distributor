@@ -7,6 +7,7 @@ use Illuminate\View\View;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Redirect;
@@ -29,64 +30,53 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        try {
-            $user = $request->user();
-
-            // Validasi seluruh input (termasuk validasi photo)
-            $validated = $request->validated();
-
-            // Handle file photo jika ada
-            if ($request->hasFile('photo')) {
-                $photo = $request->file('photo');
-
-                // Hapus foto lama 
-                if ($user->photo && Storage::disk('public')->exists($user->photo)) {
-                    Storage::disk('public')->delete($user->photo);
-                }
-
-                // Simpan file baru 
-                $filename = now()->format('Ymd_His') . '_' . Str::uuid() . '.' . $photo->getClientOriginalExtension();
-                $path = $photo->storeAs('photos', $filename, 'public');
-
-                // Masukkan path foto ke data validated
-                $validated['photo'] = $path;
-            }
-
-            // Assign data user
-            $user->fill($validated);
-
-            if ($user->isDirty('email')) {
-                $user->email_verified_at = null;
-            }
-
-            // Simpan user
-            $user->save();
-
-            return Redirect::route('user.edit')->with('success', 'Profile berhasil di update');
-        } catch (\Throwable $th) {
-            return Redirect::route('user.edit')->with('failed', $th->getMessage());
-        }
-    }
-
-
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
-    {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
         $user = $request->user();
 
-        Auth::logout();
+        // Validasi seluruh input (termasuk validasi photo)
+        $validated = $request->validated();
 
-        $user->delete();
+        // Handle file photo jika ada
+        if ($request->hasFile('photo')) {
+            $photo = $request->file('photo');
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+            // Hapus foto lama 
+            if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+                Storage::disk('public')->delete($user->photo);
+            }
 
-        return Redirect::to('/');
+            // Simpan file baru 
+            $filename = now()->format('Ymd_His') . '_' . Str::uuid() . '.' . $photo->getClientOriginalExtension();
+            $path = $photo->storeAs('photos', $filename, 'public');
+
+            // Masukkan path foto ke data validated
+            $validated['photo'] = $path;
+        }
+
+        // Assign data user
+        $user->fill($validated);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        // Simpan user
+        $user->save();
+
+        return Redirect::route('user.edit')->with('success', 'Profile berhasil di update');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'min:8', 'confirmed'],
+        ]);
+
+        // Update password logic here
+        $request->user()->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        return back()->with('success', 'Password berhasil diubah.');
     }
 }

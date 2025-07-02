@@ -46,9 +46,15 @@
                                 </svg>
                             </div>
                             <input type="email" id="email-address-icon"
-                                class="bg-gray-50 border mb-8 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                placeholder="nama@gmail.com" name="email" autocomplete="off" required="">
+                                class="{{ $errors->has('email') ? 'bg-red-50  border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 mb-2' : 'bg-gray-50 border-gray-300 text-gray-900 border  focus:ring-blue-500 focus:border-blue-500 mb-8' }} text-sm rounded-lg block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                placeholder="nama@gmail.com" name="email" autocomplete="off" required=""
+                                value="{{ old('email') }}">
                         </div>
+                        @error('email')
+                            <p class="mb-8 text-sm text-red-600 dark:text-red-500">
+                                <span class="font-medium">{{ $message }}</span>
+                            </p>
+                        @enderror
                     </div>
                     <div>
                         <label for="countries" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pilih
@@ -56,9 +62,10 @@
                         <select id="countries"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 mb-8"
                             required="" name="role_id">
-                            <option selected>Pilih role </option>
+                            <option value="" {{ old('role_id') == '' ? 'selected' : '' }}>Pilih role</option>
                             @foreach ($roles as $key => $item)
-                                <option value="{{ $key }}">{{ $item }}</option>
+                                <option value="{{ $key }}" {{ old('role_id') == $key ? 'selected' : '' }}>
+                                    {{ $item }}</option>
                             @endforeach
                         </select>
                     </div>
