@@ -38,6 +38,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/education-levels', [App\Http\Controllers\Book\EducationLevelController::class, 'store'])->name('education.level.store');
         Route::put('/education-levels/{educationLevelId}/update', [App\Http\Controllers\Book\EducationLevelController::class, 'update'])->name('education.level.update');
         Route::delete('/education-levels/{educationLevelId}/delete', [App\Http\Controllers\Book\EducationLevelController::class, 'destroy'])->name('education.level.destroy');
+
+        Route::get('/books', [App\Http\Controllers\Book\BookController::class, 'index'])->name('books.index');
+        Route::get('/books/create', [App\Http\Controllers\Book\BookController::class, 'create'])->name('books.create');
+        Route::post('/books/create', [App\Http\Controllers\Book\BookController::class, 'store'])->name('books.store');
+        Route::get('/books/{booksId}/update', [App\Http\Controllers\Book\BookController::class, 'update'])->name('books.edit');
+        Route::put('/books/{booksId}/update', [App\Http\Controllers\Book\BookController::class, 'update'])->name('books.update');
+        Route::delete('/books/{booksId}/delete', [App\Http\Controllers\Book\BookController::class, 'destroy'])->name('books.destroy');
     });
 });
 
