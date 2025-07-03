@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Book;
 
+use App\Models\Book\Book;
 use Illuminate\Http\Request;
 use App\Models\Book\Category;
 use Illuminate\Routing\Controller;
@@ -14,12 +15,8 @@ class BookController extends Controller
             'name' => 'nullable|string|max:255'
         ]);
 
-        $categories = Category::query()
-            ->when($request->input('search'), function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%");
-            })->latest()
-            ->paginate(10)->appends($request->query());
+        $books = Book::query()->paginate(10);
 
-        return view('book.books', compact('categories'));
+        return view('book.books', compact('books'));
     }
 }
