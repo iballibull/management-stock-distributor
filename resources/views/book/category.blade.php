@@ -21,7 +21,7 @@
             <div class="w-full mb-1">
                 <div class="sm:flex">
                     <div class="items-center mb-3 sm:flex sm:divide-x sm:divide-gray-100 sm:mb-0 dark:divide-gray-700">
-                        <form class="lg:pr-3" action="#" method="GET">
+                        <form class="lg:pr-3" action="" method="GET">
                             <label for="users-search" class="sr-only">Search</label>
                             <div class="relative mt-1 lg:w-64 xl:w-96">
                                 <input type="text" name="search" id="users-search" value="{{ request('search') ?? '' }}"
@@ -60,7 +60,7 @@
                                     </th>
                                     <th
                                         class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
-                                        Nama
+                                        @sortablelink('name', 'Nama')
                                     </th>
                                     <th
                                         class="px-6 py-3 w-[300px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">

@@ -62,7 +62,7 @@
                                     </th>
                                     <th
                                         class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
-                                        Nama
+                                        @sortablelink('name', 'Nama')
                                     </th>
                                     <th
                                         class="px-6 py-3 w-[300px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">

@@ -17,6 +17,7 @@ class CategoryController extends Controller
         ]);
 
         $categories = Category::query()
+            ->sortable()
             ->when($request->input('search'), function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%");
             })->latest()

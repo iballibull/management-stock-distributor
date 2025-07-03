@@ -129,243 +129,265 @@
             </div>
         </form>
         <div class="flex flex-col">
-            <div class="overflow-x-auto">
-                <div class="inline-block min-w-full align-middle">
-                    <div class="overflow-hidden shadow">
-                        <table
-                            class=" min-w-max w-full text-sm text-left rtl:text-right whitespace-nowrap text-gray-500 dark:text-gray-400">
-                            <thead class="bg-gray-100 dark:bg-gray-700">
-                                <tr>
-                                    <th
-                                        class="px-6 py-3 w-[50px] text-xs text-center font-medium text-gray-500 uppercase dark:text-gray-400">
-                                        No
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
-                                        Judul
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
-                                        Kurikulum
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
-                                        Tingkat Pendidikan
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
-                                        Harga
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
-                                        Kelas
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
-                                        Semester
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 w-[300px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
-                                        Aksi
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                                @foreach ($categories as $key => $category)
-                                    <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
-                                        <td
-                                            class="px-6 py-4 w-[50px] text-gray-900 font-medium dark:text-white text-center">
-                                            {{ $categories->firstItem() + $key }}
-                                        </td>
-                                        <td class="flex items-center p-4 mr-12 space-x-6 whitespace-nowrap">
-                                            <img class="w-10 h-10" src="{{ asset('storage/photos/default.png') }}"
-                                                alt="nama avatar">
-                                            <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                                                <div class="text-base font-semibold text-gray-900 dark:text-white">NAMA
-                                                    BUKU
-                                                    ajdskfjajsd
-                                                </div>
-                                                <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                                                    Kategori
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td
-                                            class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                            {{ $category->name }}</td>
-                                        <td
-                                            class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                            {{ $category->name }}</td>
-                                        <td
-                                            class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                            {{ $category->name }}</td>
-                                        <td
-                                            class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                            {{ $category->name }}</td>
-                                        <td
-                                            class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                            {{ $category->name }}</td>
-
-                                        <td
-                                            class="px-6 py-4 w-[300px] text-gray-900 font-medium dark:text-white text-center">
-                                            <div class="inline-flex items-center gap-2">
-                                                <button type="button"
-                                                    data-modal-target="edit-category-modal{{ $category->id }}"
-                                                    data-modal-toggle="edit-category-modal{{ $category->id }}"
-                                                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"
-                                                        xmlns="http://www.w3.org/2000/svg">
-                                                        <path
-                                                            d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z">
-                                                        </path>
-                                                        <path fill-rule="evenodd"
-                                                            d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
-                                                            clip-rule="evenodd"></path>
-                                                    </svg>
-                                                    Edit
-                                                </button>
-                                                <button type="button"
-                                                    data-modal-target="delete-category-modal{{ $category->id }}"
-                                                    data-modal-toggle="delete-category-modal{{ $category->id }}"
-                                                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900">
-                                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"
-                                                        xmlns="http://www.w3.org/2000/svg">
-                                                        <path fill-rule="evenodd"
-                                                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                                            clip-rule="evenodd"></path>
-                                                    </svg>
-                                                    Hapus
-                                                </button>
-                                            </div>
-                                        </td>
+            <div x-data="tableSort()">
+                <div class="overflow-x-auto">
+                    <div class="inline-block min-w-full align-middle">
+                        <div class="overflow-hidden shadow">
+                            <table
+                                class=" min-w-max w-full text-sm text-left rtl:text-right whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                <thead class="bg-gray-100 dark:bg-gray-700">
+                                    <tr>
+                                        <th
+                                            class="px-6 py-3 w-[50px] text-xs text-center font-medium text-gray-500 uppercase dark:text-gray-400">
+                                            No
+                                        </th>
+                                        @php
+                                            // Ambil sort dan order dari query
+                                            $sort = request('sort');
+                                            $order = request('order') === 'asc' ? 'asc' : 'desc';
+                                        @endphp
+                                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">
+                                            No
+                                        </th>
+                                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">
+                                            <a href="{{ request()->fullUrlWithQuery([
+                                                'sort' => 'nama',
+                                                'order' => $sort === 'nama' && $order === 'asc' ? 'desc' : 'asc',
+                                            ]) }}"
+                                                class="flex items-center gap-1">
+                                                Nama
+                                                @if ($sort === 'nama')
+                                                    @if ($order === 'asc')
+                                                        ▲
+                                                    @else
+                                                        ▼
+                                                    @endif
+                                                @endif
+                                            </a>
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
+                                            Kurikulum
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
+                                            Tingkat Pendidikan
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
+                                            Harga
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
+                                            Kelas
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
+                                            Semester
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 w-[300px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
+                                            Aksi
+                                        </th>
                                     </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                                    @foreach ($categories as $key => $category)
+                                        <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
+                                            <td
+                                                class="px-6 py-4 w-[50px] text-gray-900 font-medium dark:text-white text-center">
+                                                {{ $categories->firstItem() + $key }}
+                                            </td>
+                                            <td class="flex items-center p-4 mr-12 space-x-6 whitespace-nowrap">
+                                                <img class="w-10 h-10" src="{{ asset('storage/photos/default.png') }}"
+                                                    alt="nama avatar">
+                                                <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                                                    <div class="text-base font-semibold text-gray-900 dark:text-white">NAMA
+                                                        BUKU
+                                                        ajdskfjajsd
+                                                    </div>
+                                                    <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                                                        Kategori
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td
+                                                class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
+                                                {{ $category->name }}</td>
+                                            <td
+                                                class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
+                                                {{ $category->name }}</td>
+                                            <td
+                                                class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
+                                                {{ $category->name }}</td>
+                                            <td
+                                                class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
+                                                {{ $category->name }}</td>
+                                            <td
+                                                class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
+                                                {{ $category->name }}</td>
 
-                                    <!-- Edit Kategori Modal -->
-                                    <div class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/30 overflow-x-hidden overflow-y-auto"
-                                        id="edit-category-modal{{ $category->id }}">
-                                        <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto p-4">
-                                            <!-- Modal content -->
-                                            <div class="relative bg-white rounded-lg shadow dark:bg-gray-800">
-                                                <!-- Modal header -->
-                                                <div
-                                                    class="flex items-start justify-between p-5 border-b rounded-t dark:border-gray-700 border-gray-200">
-                                                    <h3 class="text-xl font-semibold dark:text-white">
-                                                        Edit Kategori
-                                                    </h3>
+                                            <td
+                                                class="px-6 py-4 w-[300px] text-gray-900 font-medium dark:text-white text-center">
+                                                <div class="inline-flex items-center gap-2">
                                                     <button type="button"
-                                                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-700 dark:hover:text-white"
-                                                        data-modal-toggle="edit-category-modal{{ $category->id }}">
-                                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                                                        data-modal-target="edit-category-modal{{ $category->id }}"
+                                                        data-modal-toggle="edit-category-modal{{ $category->id }}"
+                                                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"
                                                             xmlns="http://www.w3.org/2000/svg">
+                                                            <path
+                                                                d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z">
+                                                            </path>
                                                             <path fill-rule="evenodd"
-                                                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                                d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
                                                                 clip-rule="evenodd"></path>
                                                         </svg>
+                                                        Edit
+                                                    </button>
+                                                    <button type="button"
+                                                        data-modal-target="delete-category-modal{{ $category->id }}"
+                                                        data-modal-toggle="delete-category-modal{{ $category->id }}"
+                                                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900">
+                                                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"
+                                                            xmlns="http://www.w3.org/2000/svg">
+                                                            <path fill-rule="evenodd"
+                                                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                                clip-rule="evenodd"></path>
+                                                        </svg>
+                                                        Hapus
                                                     </button>
                                                 </div>
-                                                <!-- Modal body -->
-                                                <div class="p-6">
-                                                    <form
-                                                        action="{{ route('category.update', ['categoryId' => $category->id]) }}"
-                                                        method="post">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <div class="flex justify-center">
-                                                            <div class="w-full max-w-md">
-                                                                <div class="grid grid-cols-1 gap-6">
-                                                                    <!-- Input Nama -->
-                                                                    <div>
-                                                                        <label for="add_name"
-                                                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                                            Nama <span class="text-red-500">*</span>
-                                                                        </label>
-                                                                        <input type="text" id="add_name"
-                                                                            placeholder="nama kategori" name="name"
-                                                                            value="{{ $category->name }}"
-                                                                            autocomplete="off"
-                                                                            class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                            </td>
+                                        </tr>
+
+                                        <!-- Edit Kategori Modal -->
+                                        <div class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/30 overflow-x-hidden overflow-y-auto"
+                                            id="edit-category-modal{{ $category->id }}">
+                                            <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto p-4">
+                                                <!-- Modal content -->
+                                                <div class="relative bg-white rounded-lg shadow dark:bg-gray-800">
+                                                    <!-- Modal header -->
+                                                    <div
+                                                        class="flex items-start justify-between p-5 border-b rounded-t dark:border-gray-700 border-gray-200">
+                                                        <h3 class="text-xl font-semibold dark:text-white">
+                                                            Edit Kategori
+                                                        </h3>
+                                                        <button type="button"
+                                                            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-700 dark:hover:text-white"
+                                                            data-modal-toggle="edit-category-modal{{ $category->id }}">
+                                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                                                                xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd"
+                                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                                    clip-rule="evenodd"></path>
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                    <!-- Modal body -->
+                                                    <div class="p-6">
+                                                        <form
+                                                            action="{{ route('category.update', ['categoryId' => $category->id]) }}"
+                                                            method="post">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <div class="flex justify-center">
+                                                                <div class="w-full max-w-md">
+                                                                    <div class="grid grid-cols-1 gap-6">
+                                                                        <!-- Input Nama -->
+                                                                        <div>
+                                                                            <label for="add_name"
+                                                                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                                                Nama <span class="text-red-500">*</span>
+                                                                            </label>
+                                                                            <input type="text" id="add_name"
+                                                                                placeholder="nama kategori" name="name"
+                                                                                value="{{ $category->name }}"
+                                                                                autocomplete="off"
+                                                                                class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                </div>
+                                                    </div>
 
-                                                <!-- Modal footer -->
-                                                <div
-                                                    class="flex justify-end items-center p-6 border-t border-gray-200 rounded-b dark:border-gray-700">
-                                                    <button
-                                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                                                        type="submit">
-                                                        Simpan
-                                                    </button>
-                                                </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Delete categori Modal -->
-                                    <div class="fixed inset-0 z-50 flex items-center justify-center min-h-screen hidden overflow-x-hidden overflow-y-auto"
-                                        id="delete-category-modal{{ $category->id }}">
-                                        <div class="relative w-full max-w-md px-4">
-                                            <!-- Modal content -->
-                                            <div class="relative bg-white rounded-lg shadow dark:bg-gray-800">
-                                                <!-- Modal header -->
-                                                <div class="flex justify-end p-2">
-                                                    <button type="button"
-                                                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-700 dark:hover:text-white"
-                                                        data-modal-hide="delete-category-modal{{ $category->id }}">
-                                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
-                                                            xmlns="http://www.w3.org/2000/svg">
-                                                            <path fill-rule="evenodd"
-                                                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                                clip-rule="evenodd"></path>
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                                <!-- Modal body -->
-                                                <div class="p-6 pt-0 text-center">
-                                                    <form
-                                                        action="{{ route('category.destroy', ['categoryId' => $category->id]) }}"
-                                                        method="post">
-                                                        @csrf
-                                                        @method('DELETE')
-
-                                                        <svg class="w-16 h-16 mx-auto text-red-600" fill="none"
-                                                            stroke="currentColor" viewBox="0 0 24 24"
-                                                            xmlns="http://www.w3.org/2000/svg">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                        </svg>
-
-                                                        <h3 class="mt-5 mb-6 text-lg text-gray-500 dark:text-gray-400">
-                                                            Yakin ingin menghapus kategori
-                                                            <b>{{ $category->name }}</b>?
-                                                        </h3>
-
-                                                        <!-- Tombol Submit -->
-                                                        <button type="submit"
-                                                            class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-base inline-flex items-center px-3 py-2.5 text-center mr-2 dark:focus:ring-red-800">
-                                                            Ya, saya yakin
+                                                    <!-- Modal footer -->
+                                                    <div
+                                                        class="flex justify-end items-center p-6 border-t border-gray-200 rounded-b dark:border-gray-700">
+                                                        <button
+                                                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                                                            type="submit">
+                                                            Simpan
                                                         </button>
-
-                                                        <!-- Tombol Batal -->
-                                                        <button type="button"
-                                                            class="text-gray-900 bg-white hover:bg-gray-100 focus:ring-4 focus:ring-blue-300 border border-gray-200 font-medium inline-flex items-center rounded-lg text-base px-3 py-2.5 text-center dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-700"
-                                                            data-modal-hide="delete-category-modal{{ $category->id }}">
-                                                            Tidak, batal
-                                                        </button>
+                                                    </div>
                                                     </form>
-
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                @endforeach
-                            </tbody>
-                        </table>
-                        {{ $categories->links('pagination::tailwind') }}
+
+                                        <!-- Delete categori Modal -->
+                                        <div class="fixed inset-0 z-50 flex items-center justify-center min-h-screen hidden overflow-x-hidden overflow-y-auto"
+                                            id="delete-category-modal{{ $category->id }}">
+                                            <div class="relative w-full max-w-md px-4">
+                                                <!-- Modal content -->
+                                                <div class="relative bg-white rounded-lg shadow dark:bg-gray-800">
+                                                    <!-- Modal header -->
+                                                    <div class="flex justify-end p-2">
+                                                        <button type="button"
+                                                            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-700 dark:hover:text-white"
+                                                            data-modal-hide="delete-category-modal{{ $category->id }}">
+                                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                                                                xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd"
+                                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                                    clip-rule="evenodd"></path>
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                    <!-- Modal body -->
+                                                    <div class="p-6 pt-0 text-center">
+                                                        <form
+                                                            action="{{ route('category.destroy', ['categoryId' => $category->id]) }}"
+                                                            method="post">
+                                                            @csrf
+                                                            @method('DELETE')
+
+                                                            <svg class="w-16 h-16 mx-auto text-red-600" fill="none"
+                                                                stroke="currentColor" viewBox="0 0 24 24"
+                                                                xmlns="http://www.w3.org/2000/svg">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
+
+                                                            <h3 class="mt-5 mb-6 text-lg text-gray-500 dark:text-gray-400">
+                                                                Yakin ingin menghapus kategori
+                                                                <b>{{ $category->name }}</b>?
+                                                            </h3>
+
+                                                            <!-- Tombol Submit -->
+                                                            <button type="submit"
+                                                                class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-base inline-flex items-center px-3 py-2.5 text-center mr-2 dark:focus:ring-red-800">
+                                                                Ya, saya yakin
+                                                            </button>
+
+                                                            <!-- Tombol Batal -->
+                                                            <button type="button"
+                                                                class="text-gray-900 bg-white hover:bg-gray-100 focus:ring-4 focus:ring-blue-300 border border-gray-200 font-medium inline-flex items-center rounded-lg text-base px-3 py-2.5 text-center dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-700"
+                                                                data-modal-hide="delete-category-modal{{ $category->id }}">
+                                                                Tidak, batal
+                                                            </button>
+                                                        </form>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            {{ $categories->links('pagination::tailwind') }}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -17,6 +17,7 @@ class CurriculumController extends Controller
         ]);
 
         $curriculums = Curriculum::query()
+            ->sortable()
             ->when($request->input('search'), function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%");
             })->latest()

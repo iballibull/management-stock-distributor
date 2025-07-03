@@ -17,6 +17,7 @@ class EducationLevelController extends Controller
         ]);
 
         $educationLevels = EducationLevel::query()
+            ->sortable()
             ->when($request->input('search'), function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%");
             })->latest()
