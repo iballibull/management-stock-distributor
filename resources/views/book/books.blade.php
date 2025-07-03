@@ -2,6 +2,30 @@
 
 @section('content')
     @component('layouts.headers.breadcrumbs')
+        <li>
+            <div class="flex items-center">
+                <svg class="w-6 h-6 text-gray-700" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                <a href="{{ route('books.index') }}"><span
+                        class="ml-1 text-gray-700 md:ml-2 dark:text-gray-500 hover:text-blue-600"
+                        aria-current="page">Buku</span></a>
+            </div>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                <a href="{{ route('books.index') }}"><span
+                        class="ml-1 text-gray-400 md:ml-2 dark:text-gray-500 hover:text-blue-600" aria-current="page">Daftar
+                        Buku</span></a>
+            </div>
+        </li>
     @endcomponent
     <div x-data="{ showFilter: false }" class="col-span-full">
         <form action="">
@@ -34,8 +58,7 @@
                                 </svg>
                                 Filter
                             </button>
-                            <button type="button" data-modal-target="add-category-modal"
-                                data-modal-toggle="add-category-modal"
+                            <button type="button" data-modal-target="add-book-modal" data-modal-toggle="add-book-modal"
                                 class="inline-flex items-center justify-center w-1/2 px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                 <svg class="w-5 h-5 mr-2 -ml-1" fill="currentColor" viewBox="0 0 20 20"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -141,29 +164,9 @@
                                             class="px-6 py-3 w-[50px] text-xs text-center font-medium text-gray-500 uppercase dark:text-gray-400">
                                             No
                                         </th>
-                                        @php
-                                            // Ambil sort dan order dari query
-                                            $sort = request('sort');
-                                            $order = request('order') === 'asc' ? 'asc' : 'desc';
-                                        @endphp
-                                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">
-                                            No
-                                        </th>
-                                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">
-                                            <a href="{{ request()->fullUrlWithQuery([
-                                                'sort' => 'nama',
-                                                'order' => $sort === 'nama' && $order === 'asc' ? 'desc' : 'asc',
-                                            ]) }}"
-                                                class="flex items-center gap-1">
-                                                Nama
-                                                @if ($sort === 'nama')
-                                                    @if ($order === 'asc')
-                                                        ▲
-                                                    @else
-                                                        ▼
-                                                    @endif
-                                                @endif
-                                            </a>
+                                        <th
+                                            class="px-6 py-3 w-[50px] text-xs text-center font-medium text-gray-500 uppercase dark:text-gray-400">
+                                            Nama
                                         </th>
                                         <th
                                             class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
@@ -192,11 +195,11 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                                    @foreach ($categories as $key => $category)
+                                    @foreach ($books as $key => $book)
                                         <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
                                             <td
                                                 class="px-6 py-4 w-[50px] text-gray-900 font-medium dark:text-white text-center">
-                                                {{ $categories->firstItem() + $key }}
+                                                {{ $books->firstItem() + $key }}
                                             </td>
                                             <td class="flex items-center p-4 mr-12 space-x-6 whitespace-nowrap">
                                                 <img class="w-10 h-10" src="{{ asset('storage/photos/default.png') }}"
@@ -213,26 +216,26 @@
                                             </td>
                                             <td
                                                 class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                                {{ $category->name }}</td>
+                                                {{ $book->name }}</td>
                                             <td
                                                 class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                                {{ $category->name }}</td>
+                                                {{ $book->name }}</td>
                                             <td
                                                 class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                                {{ $category->name }}</td>
+                                                {{ $book->name }}</td>
                                             <td
                                                 class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                                {{ $category->name }}</td>
+                                                {{ $book->name }}</td>
                                             <td
                                                 class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                                {{ $category->name }}</td>
+                                                {{ $book->name }}</td>
 
                                             <td
                                                 class="px-6 py-4 w-[300px] text-gray-900 font-medium dark:text-white text-center">
                                                 <div class="inline-flex items-center gap-2">
                                                     <button type="button"
-                                                        data-modal-target="edit-category-modal{{ $category->id }}"
-                                                        data-modal-toggle="edit-category-modal{{ $category->id }}"
+                                                        data-modal-target="edit-book-modal{{ $book->id }}"
+                                                        data-modal-toggle="edit-book-modal{{ $book->id }}"
                                                         class="inline-flex items-center px-3 py-2 text-sm font-medium text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                                         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"
                                                             xmlns="http://www.w3.org/2000/svg">
@@ -246,8 +249,8 @@
                                                         Edit
                                                     </button>
                                                     <button type="button"
-                                                        data-modal-target="delete-category-modal{{ $category->id }}"
-                                                        data-modal-toggle="delete-category-modal{{ $category->id }}"
+                                                        data-modal-target="delete-book-modal{{ $book->id }}"
+                                                        data-modal-toggle="delete-book-modal{{ $book->id }}"
                                                         class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900">
                                                         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"
                                                             xmlns="http://www.w3.org/2000/svg">
@@ -263,7 +266,7 @@
 
                                         <!-- Edit Kategori Modal -->
                                         <div class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/30 overflow-x-hidden overflow-y-auto"
-                                            id="edit-category-modal{{ $category->id }}">
+                                            id="edit-book-modal{{ $book->id }}">
                                             <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto p-4">
                                                 <!-- Modal content -->
                                                 <div class="relative bg-white rounded-lg shadow dark:bg-gray-800">
@@ -275,7 +278,7 @@
                                                         </h3>
                                                         <button type="button"
                                                             class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-700 dark:hover:text-white"
-                                                            data-modal-toggle="edit-category-modal{{ $category->id }}">
+                                                            data-modal-toggle="edit-book-modal{{ $book->id }}">
                                                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
                                                                 xmlns="http://www.w3.org/2000/svg">
                                                                 <path fill-rule="evenodd"
@@ -287,7 +290,7 @@
                                                     <!-- Modal body -->
                                                     <div class="p-6">
                                                         <form
-                                                            action="{{ route('category.update', ['categoryId' => $category->id]) }}"
+                                                            action="{{ route('books.update', ['bookId' => $book->id]) }}"
                                                             method="post">
                                                             @csrf
                                                             @method('PUT')
@@ -302,7 +305,7 @@
                                                                             </label>
                                                                             <input type="text" id="add_name"
                                                                                 placeholder="nama kategori" name="name"
-                                                                                value="{{ $category->name }}"
+                                                                                value="{{ $book->name }}"
                                                                                 autocomplete="off"
                                                                                 class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                                                                         </div>
@@ -327,7 +330,7 @@
 
                                         <!-- Delete categori Modal -->
                                         <div class="fixed inset-0 z-50 flex items-center justify-center min-h-screen hidden overflow-x-hidden overflow-y-auto"
-                                            id="delete-category-modal{{ $category->id }}">
+                                            id="delete-book-modal{{ $book->id }}">
                                             <div class="relative w-full max-w-md px-4">
                                                 <!-- Modal content -->
                                                 <div class="relative bg-white rounded-lg shadow dark:bg-gray-800">
@@ -335,7 +338,7 @@
                                                     <div class="flex justify-end p-2">
                                                         <button type="button"
                                                             class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-700 dark:hover:text-white"
-                                                            data-modal-hide="delete-category-modal{{ $category->id }}">
+                                                            data-modal-hide="delete-book-modal{{ $book->id }}">
                                                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
                                                                 xmlns="http://www.w3.org/2000/svg">
                                                                 <path fill-rule="evenodd"
@@ -347,7 +350,7 @@
                                                     <!-- Modal body -->
                                                     <div class="p-6 pt-0 text-center">
                                                         <form
-                                                            action="{{ route('category.destroy', ['categoryId' => $category->id]) }}"
+                                                            action="{{ route('books.destroy', ['bookId' => $book->id]) }}"
                                                             method="post">
                                                             @csrf
                                                             @method('DELETE')
@@ -362,7 +365,7 @@
 
                                                             <h3 class="mt-5 mb-6 text-lg text-gray-500 dark:text-gray-400">
                                                                 Yakin ingin menghapus kategori
-                                                                <b>{{ $category->name }}</b>?
+                                                                <b>{{ $book->name }}</b>?
                                                             </h3>
 
                                                             <!-- Tombol Submit -->
@@ -374,7 +377,7 @@
                                                             <!-- Tombol Batal -->
                                                             <button type="button"
                                                                 class="text-gray-900 bg-white hover:bg-gray-100 focus:ring-4 focus:ring-blue-300 border border-gray-200 font-medium inline-flex items-center rounded-lg text-base px-3 py-2.5 text-center dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-700"
-                                                                data-modal-hide="delete-category-modal{{ $category->id }}">
+                                                                data-modal-hide="delete-book-modal{{ $book->id }}">
                                                                 Tidak, batal
                                                             </button>
                                                         </form>
@@ -386,7 +389,7 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                            {{ $categories->links('pagination::tailwind') }}
+                            {{ $books->links('pagination::tailwind') }}
                         </div>
                     </div>
                 </div>
@@ -395,7 +398,7 @@
 
         <!-- Add Kategori Modal -->
         <div class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/30 overflow-x-hidden overflow-y-auto"
-            id="add-category-modal">
+            id="add-book-modal">
             <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto p-4">
                 <!-- Modal content -->
                 <div class="relative bg-white rounded-lg shadow dark:bg-gray-800">
@@ -407,7 +410,7 @@
                         </h3>
                         <button type="button"
                             class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-700 dark:hover:text-white"
-                            data-modal-toggle="add-category-modal">
+                            data-modal-toggle="add-book-modal">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd"
@@ -418,7 +421,7 @@
                     </div>
                     <!-- Modal body -->
                     <div class="p-6">
-                        <form action="{{ route('category.store') }}" method="post">
+                        <form action="{{ route('books.store') }}" method="post">
                             @csrf
                             @method('POST')
                             <div class="flex justify-center">
