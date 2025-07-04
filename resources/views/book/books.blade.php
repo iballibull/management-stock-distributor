@@ -27,8 +27,11 @@
             </div>
         </li>
     @endcomponent
-    <div x-data="{ showFilter: false }" class="col-span-full">
-        <form action="">
+    <div x-data="{ showFilter: {{ request()->input('category_id') || request()->input('curriculum_id') || request()->input('education_level_id') || request()->input('price') || request()->input('grade_number') || request()->input('semester') ? 'true' : 'false' }} }" class="col-span-full">
+        @php
+            $keepQuery = request()->only(['search', 'sort', 'direction']);
+        @endphp
+        <form action="{{ route('books.index') }}">
             <div
                 class="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
                 <div class="w-full mb-1">
@@ -40,7 +43,7 @@
                                     <input type="text" name="search" id="users-search"
                                         value="{{ request('search') ?? '' }}"
                                         class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        placeholder="Cari nama kategori" autocomplete="off">
+                                        placeholder="Cari nama judul buku" autocomplete="off">
                                 </div>
                             </div>
                         </div>
@@ -76,69 +79,75 @@
                 <div class="w-full min-w-[320px]">
                     <div class="flex flex-wrap gap-4 items-end bg-white p-4 max-w-full text-white">
                         <div class="relative z-0 basis-full sm:basis-1/2 lg:basis-1/4 flex-1 group md:max-w-[140]">
-                            <input type="email" name="floating_email" id="floating_email"
-                                class="block py-2.5 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-500 peer"
-                                placeholder=" " required />
-                            <label for="floating_email"
-                                class="peer-focus:font-medium absolute text-sm text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-                                Email address </label>
+                            <select type="" id="category"
+                                class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer"
+                                placeholder="" name="category_id">
+                                <option value="" selected>Pilih Kategori</option>
+                                @foreach ($categories as $id => $name)
+                                    <option value="{{ $id }}" @selected(request('category_id') == $id)>{{ $name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <input type="hidden" name="sort" value="{{ request('sort') }}">
+                        <input type="hidden" name="direction" value="{{ request('direction') }}">
+
+                        <div class="relative z-0 basis-full sm:basis-1/2 lg:basis-1/4 flex-1 group md:max-w-[140]">
+                            <select type="" id="curriculum_id"
+                                class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer"
+                                placeholder="" name="curriculum_id">
+                                <option value="" selected>Pilih Kurikulum</option>
+                                @foreach ($curriculums as $id => $name)
+                                    <option value="{{ $id }}" @selected(request('curriculum_id') == $id)>{{ $name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div class="relative z-0 basis-full sm:basis-1/2 lg:basis-1/4 flex-1 group md:max-w-[140]">
-                            <input type="password" name="floating_password" id="floating_password"
-                                class="block py-2.5 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-500 peer"
-                                placeholder=" " required />
-                            <label for="floating_password"
-                                class="peer-focus:font-medium absolute text-sm text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-                                Password</label>
+                            <select type="" id="educationLEvel"
+                                class=" block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer"
+                                placeholder="" name="education_level_id">
+                                <option value="" selected>Pilih Tingkat Pendidikan</option>
+                                @foreach ($educationLevels as $id => $name)
+                                    <option value="{{ $id }}" @selected(request('education_level_id') == $id)>{{ $name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div class="relative z-0 basis-full sm:basis-1/2 lg:basis-1/4 flex-1 group md:max-w-[140]">
-                            <input type="password" name="repeat_password" id="floating_repeat_password"
-                                class="block py-2.5 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-500 peer"
-                                placeholder=" " required />
-                            <label for="floating_repeat_password"
-                                class="peer-focus:font-medium absolute text-sm text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-                                Confirm password</label>
+                            <input type="number" name="price" id="price"
+                                class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-500 peer"
+                                placeholder=" " autocomplete="off" value="{{ request('price') ?? '' }}" />
+                            <label for="price"
+                                class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                                Harga</label>
                         </div>
 
                         <div class="relative z-0 basis-full sm:basis-1/2 lg:basis-1/4 flex-1 group md:max-w-[140]">
-                            <input type="text" name="floating_first_name" id="floating_first_name"
-                                class="block py-2.5 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-500 peer"
-                                placeholder=" " required />
-                            <label for="floating_first_name"
-                                class="peer-focus:font-medium absolute text-sm text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-                                First name</label>
+                            <input type="text" name="grade_number" id="grade_number"
+                                class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-500 peer"
+                                placeholder=" " autocomplete="off" value="{{ request('grade_number') ?? '' }}" />
+                            <label for="grade_number"
+                                class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                                Kelas</label>
                         </div>
 
                         <div class="relative z-0 basis-full sm:basis-1/2 lg:basis-1/4 flex-1 group md:max-w-[140]">
-                            <input type="text" name="floating_last_name" id="floating_last_name"
-                                class="block py-2.5 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-500 peer"
-                                placeholder=" " required />
-                            <label for="floating_last_name"
-                                class="peer-focus:font-medium absolute text-sm text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-                                Last name</label>
+                            <select type="" id="semester"
+                                class=" block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer"
+                                placeholder="" name="semester">
+                                <option value="" selected>Pilih Semester</option>
+                                <option value="1" @selected(request('semester') == 1)>1</option>
+                                <option value="2" @selected(request('semester') == 2)>2</option>
+                            </select>
                         </div>
 
-                        <div class="relative z-0 basis-full sm:basis-1/2 lg:basis-1/4 flex-1 group md:max-w-[140]">
-                            <input type="tel" name="floating_phone" id="floating_phone"
-                                class="block py-2.5 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-500 peer"
-                                placeholder=" " required />
-                            <label for="floating_phone"
-                                class="peer-focus:font-medium absolute text-sm text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-                                Phone number</label>
-                        </div>
-
-                        <div class="relative z-0 basis-full sm:basis-1/2 lg:basis-1/4 flex-1 group md:max-w-[140]">
-                            <input type="text" name="floating_company" id="floating_company"
-                                class="block py-2.5 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-500 peer"
-                                placeholder=" " required />
-                            <label for="floating_company"
-                                class="peer-focus:font-medium absolute text-sm text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-                                Company</label>
-                        </div>
                         <div class="w-full flex justify-end mt-2">
-                            <button type="submit"
+                            <button type="button"
+                                @click="window.location.href = '{{ route('books.index', request()->only(['search', 'sort', 'direction'])) }}'"
                                 class="mx-4 text-gray-900 border bg-white  focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                 Reset Filter
                             </button>
@@ -166,27 +175,27 @@
                                         </th>
                                         <th
                                             class="px-6 py-3 w-[50px] text-xs text-center font-medium text-gray-500 uppercase dark:text-gray-400">
-                                            Nama
+                                            @sortablelink('title', 'Judul')
                                         </th>
                                         <th
                                             class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
-                                            Kurikulum
+                                            @sortablelink('educationLevel.name', 'Tingkat Pendidikan')
                                         </th>
                                         <th
                                             class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
-                                            Tingkat Pendidikan
+                                            @sortablelink('grade_number', 'Kelas')
                                         </th>
                                         <th
                                             class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
-                                            Harga
+                                            @sortablelink('curriculum.name', 'Kurikulum')
                                         </th>
                                         <th
                                             class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
-                                            Kelas
+                                            @sortablelink('price', 'Harga')
                                         </th>
                                         <th
                                             class="px-6 py-3 w-[200px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
-                                            Semester
+                                            @sortablelink('semester', 'Semester')
                                         </th>
                                         <th
                                             class="px-6 py-3 w-[300px] text-xs font-medium text-gray-500 uppercase text-center dark:text-gray-400">
@@ -201,34 +210,44 @@
                                                 class="px-6 py-4 w-[50px] text-gray-900 font-medium dark:text-white text-center">
                                                 {{ $books->firstItem() + $key }}
                                             </td>
-                                            <td class="flex items-center p-4 mr-12 space-x-6 whitespace-nowrap">
-                                                <img class="w-10 h-10" src="{{ asset('storage/photos/default.png') }}"
-                                                    alt="nama avatar">
-                                                <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                                                    <div class="text-base font-semibold text-gray-900 dark:text-white">NAMA
-                                                        BUKU
-                                                        ajdskfjajsd
+                                            <td class="flex items-center p-4 mr-12 space-x-6 whitespace-nowrap"
+                                                title="{{ $book->title }}">
+                                                <div class="flex-shrink-0">
+                                                    <img class="w-12 h-12 object-cover rounded-md border border-gray-200 dark:border-gray-700"
+                                                        src="{{ asset('storage/' . $book->image) }}"
+                                                        alt="Foto Buku {{ $book->title }}">
+                                                </div>
+
+                                                <div class="flex-1 min-w-0">
+                                                    <div
+                                                        class="text-base font-semibold text-gray-900 dark:text-white truncate">
+                                                        {{ $book->title }}
                                                     </div>
-                                                    <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                                                        Kategori
+                                                    <div
+                                                        class="text-sm font-normal text-gray-500 dark:text-gray-400 truncate">
+                                                        {{ $book->category->name }}
                                                     </div>
                                                 </div>
                                             </td>
                                             <td
                                                 class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                                {{ $book->name }}</td>
+                                                {{ $book->educationLevel->name }}
+                                            </td>
                                             <td
                                                 class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                                {{ $book->name }}</td>
+                                                {{ $book->grade_number }}
+                                            </td>
                                             <td
                                                 class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                                {{ $book->name }}</td>
+                                                {{ $book->curriculum->name }}
+                                            </td>
                                             <td
                                                 class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                                {{ $book->name }}</td>
+                                                {{ 'Rp ' . number_format($book->price, 0, ',', '.') }}
+                                            </td>
                                             <td
                                                 class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                                {{ $book->name }}</td>
+                                                {{ $book->semester }}</td>
 
                                             <td
                                                 class="px-6 py-4 w-[300px] text-gray-900 font-medium dark:text-white text-center">

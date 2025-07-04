@@ -29,7 +29,7 @@ class BookFactory extends Factory
             'education_level_id' => Arr::random($educationLevelIds->toArray()),
             'curriculum_id' => Arr::random($curriculumIds->toArray()),
             'title' => $this->faker->sentence(3),
-            'image' => $this->faker->imageUrl(640, 480, 'books', true),
+            'image' => 'bookImages/default.png',
             'price' => $this->faker->numberBetween(10000, 100000),
             'grade_number' => $this->faker->numberBetween(1, 3),
             'semester' => $this->faker->randomElement([1, 2]),

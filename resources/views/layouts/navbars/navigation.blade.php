@@ -28,6 +28,9 @@
                 <div class="hidden mr-3 -mb-1 sm:block">
                     <span></span>
                 </div>
+                @php
+                    $user = Auth::user();
+                @endphp
 
                 <div class="flex items-center ml-3">
                     <div>
@@ -36,8 +39,7 @@
                             id="user-menu-button-2" aria-expanded="false" data-dropdown-toggle="dropdown-2">
                             <span class="sr-only">User Menu</span>
                             <img class="w-8 h-8 rounded-full"
-                                src="{{ asset('storage/' . (Auth::user()->photo ?? 'photos/default.png')) }}"
-                                alt="user photo">
+                                src="{{ asset('storage/' . ($user->photo ?? 'photos/default.png')) }}" alt="user photo">
                         </button>
                     </div>
 
@@ -46,10 +48,10 @@
                         style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(1213px, 61px, 0px);">
                         <div class="px-4 py-3" role="none">
                             <p class="text-sm text-gray-900 dark:text-white" role="none">
-                                {{ Auth::user()->name }}
+                                {{ $user->name }}
                             </p>
                             <p class="text-sm font-medium text-gray-900 truncate dark:text-gray-300" role="none">
-                                {{ Auth::user()->email }}
+                                {{ $user->email }}
                             </p>
                         </div>
                         <ul class="py-1" role="none">
