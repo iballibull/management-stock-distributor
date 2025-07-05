@@ -31,16 +31,16 @@ class Book extends Model
 
     public function category()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class)->withTrashed();
     }
 
     public function educationLevel()
     {
-        return $this->belongsTo(EducationLevel::class);
+        return $this->belongsTo(EducationLevel::class)->withTrashed();
     }
 
     public function curriculum()
     {
-        return $this->belongsTo(Curriculum::class);
+        return $this->belongsTo(Curriculum::class)->withTrashed();
     }
 }

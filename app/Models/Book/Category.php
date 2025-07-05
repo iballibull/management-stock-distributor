@@ -16,4 +16,9 @@ class Category extends Model
     ];
 
     public $sortable = ['name'];
+
+    public function setNameAttribute($value)
+    {
+        $this->attributes['name'] = strtoupper(trim($value));
+    }
 }
