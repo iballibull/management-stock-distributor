@@ -164,4 +164,135 @@ class BookController extends Controller
 
         return redirect()->route('books.index')->with('success', 'Buku berhasil ditambah');
     }
+
+    public function destroy($bookId)
+    {
+        try {
+            $book = Book::findOrFail($bookId);
+            $book->delete();
+
+            // Hapus gambar dari book
+            if ($book->image && Storage::disk('public')->exists($book->image)) {
+                Storage::disk('public')->delete($book->image);
+            }
+
+            return back()->with('success', 'Buku berhasil dihapus');
+        } catch (\Throwable $th) {
+            return back()->with('failed', 'Gagal menghapus buku: ' . $th->getMessage());
+        }
+    }
+
+    public function edit($bookId)
+    {
+        $book = Book::with(['category', 'curriculum', 'educationLevel'])->findOrFail($bookId);
+        $categories = Category::pluck('name', 'id');
+        $curriculums = Curriculum::pluck('name', 'id');
+        $educationLevels = EducationLevel::pluck('name', 'id');
+
+        return view('book.edit-books', compact('book', 'categories', 'curriculums', 'educationLevels'));
+    }
+
+    public function update(Request $request, $bookId)
+    {
+        $request->validate([
+            'title' => [
+                'required',
+                'string',
+                'max:288',
+                Rule::unique('books')->ignore($bookId)->where(function ($query) use ($request) {
+                    return $query
+                        ->where('title', 'like', '%' . $request->title . '%')
+                        ->where('category_id', $request->category_id)
+                        ->where('education_level_id', $request->education_level_id)
+                        ->where('curriculum_id', $request->curriculum_id)
+                        ->where('grade_number', $request->grade_number)
+                        ->where('semester', $request->semester)
+                        ->whereNull('deleted_at');
+                }),
+            ],
+            'category_id' => 'required|exists:categories,id',
+            'education_level_id' => 'required|exists:education_levels,id',
+            'curriculum_id' => 'required|exists:curriculums,id',
+            'price' => 'required|numeric|min:0',
+            'grade_number' => 'required|string|in:1,2,3,4,5,6,7,8,9,10,11,12,BESAR,KECIL',
+            'semester' => 'required|in:1,2',
+            'image' => 'nullable|file|mimes:jpeg,png,jpg|max:2048'
+        ]);
+
+        $book = Book::findOrFail($bookId);
+
+        // Handle input gambar
+        $imagePath = $book->image;
+        if ($request->hasFile('image')) {
+            // Hapus gambar lama jika ada
+            if ($book->image && Storage::disk('public')->exists($book->image)) {
+                Storage::disk('public')->delete($book->image);
+            }
+
+            $image = $request->file('image');
+            $imageName = now()->format('Ymd_His') . '_' . Str::uuid() . '.' . $image->getClientOriginalExtension();
+            $imagePath = $image->storeAs('bookImages', $imageName, 'public');
+        }
+
+        // Cek apakah buku dengan kriteria tersebut ada di trash
+        $existingBook = Book::withTrashed()
+            ->where('id', '!=', $bookId)
+            ->where('title', 'like', '%' . $request->title . '%')
+            ->where('category_id', $request->category_id)
+            ->where('education_level_id', $request->education_level_id)
+            ->where('curriculum_id', $request->curriculum_id)
+            ->where('grade_number', $request->grade_number)
+            ->where('semester', $request->semester)
+            ->whereNotNull('deleted_at')
+            ->first();
+
+        if ($existingBook) {
+            // Hapus gambar dari existing book yang ada di trash
+            if ($existingBook->image && Storage::disk('public')->exists($existingBook->image)) {
+                Storage::disk('public')->delete($existingBook->image);
+            }
+
+            // Restore existing book dengan data baru
+            $existingBook->restore(); // Restore dari soft delete
+            $existingBook->update([
+                'title' => $request->title,
+                'category_id' => $request->category_id,
+                'education_level_id' => $request->education_level_id,
+                'curriculum_id' => $request->curriculum_id,
+                'price' => $request->price,
+                'grade_number' => $request->grade_number,
+                'semester' => $request->semester,
+                'image' => $imagePath,
+                'created_at' => now()
+            ]);
+
+            // Update data yang berelasi dengan book ini
+            try {
+                // TODO
+
+                // Hapus book yang sedang di-edit (soft delete)
+                $book->delete();
+            } catch (\Exception $e) {
+                // Jika ada error saat update relasi, rollback
+                return redirect()->route('books.index')
+                    ->with('failed', 'Gagal mengupdate data terkait: ' . $e->getMessage());
+            }
+
+            return redirect()->route('books.index')->with('success', 'Buku berhasil diupdate');
+        }
+
+        // Update buku
+        $book->update([
+            'title' => $request->title,
+            'category_id' => $request->category_id,
+            'education_level_id' => $request->education_level_id,
+            'curriculum_id' => $request->curriculum_id,
+            'price' => $request->price,
+            'grade_number' => $request->grade_number,
+            'semester' => $request->semester,
+            'image' => $imagePath,
+        ]);
+
+        return redirect()->route('books.index')->with('success', 'Buku berhasil diupdate');
+    }
 }

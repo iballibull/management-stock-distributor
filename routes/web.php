@@ -42,7 +42,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/books', [App\Http\Controllers\Book\BookController::class, 'index'])->name('books.index');
         Route::get('/books/create', [App\Http\Controllers\Book\BookController::class, 'create'])->name('books.create');
         Route::post('/books/create', [App\Http\Controllers\Book\BookController::class, 'store'])->name('books.store');
-        Route::get('/books/{bookId}/update', [App\Http\Controllers\Book\BookController::class, 'update'])->name('books.edit');
+        Route::get('/books/{bookId}/update', [App\Http\Controllers\Book\BookController::class, 'edit'])->name('books.edit');
         Route::put('/books/{bookId}/update', [App\Http\Controllers\Book\BookController::class, 'update'])->name('books.update');
         Route::delete('/books/{bookId}/delete', [App\Http\Controllers\Book\BookController::class, 'destroy'])->name('books.destroy');
     });

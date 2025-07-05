@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('education_level_id');
             $table->unsignedBigInteger('curriculum_id');
             $table->string('title');
-            $table->string('image');
+            $table->string('image')->nullable();
             $table->decimal('price', 15, 2);
             $table->enum('grade_number', ['1', '2', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'BESAR', 'KECIL']);
             $table->enum('semester', [1, 2]);

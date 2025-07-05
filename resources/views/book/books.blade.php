@@ -217,7 +217,7 @@
                                                 title="{{ $book->title }}">
                                                 <div class="flex-shrink-0">
                                                     <img class="w-12 h-12 object-cover rounded-md border border-gray-200 dark:border-gray-700"
-                                                        src="{{ asset('storage/' . $book->image) }}"
+                                                        src="{{ asset('storage/' . ($book->image ?? 'bookImages/default.jpg')) }}"
                                                         alt="Foto Buku {{ $book->title }}">
                                                 </div>
 
@@ -256,8 +256,7 @@
                                                 class="px-6 py-4 w-[300px] text-gray-900 font-medium dark:text-white text-center">
                                                 <div class="inline-flex items-center gap-2">
                                                     <button type="button"
-                                                        data-modal-target="edit-book-modal{{ $book->id }}"
-                                                        data-modal-toggle="edit-book-modal{{ $book->id }}"
+                                                        @click="window.location.href = '{{ route('books.edit', ['bookId' => $book->id]) }}'"
                                                         class="inline-flex items-center px-3 py-2 text-sm font-medium text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                                         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"
                                                             xmlns="http://www.w3.org/2000/svg">
@@ -285,70 +284,6 @@
                                                 </div>
                                             </td>
                                         </tr>
-
-                                        <!-- Edit Kategori Modal -->
-                                        <div class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/30 overflow-x-hidden overflow-y-auto"
-                                            id="edit-book-modal{{ $book->id }}">
-                                            <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto p-4">
-                                                <!-- Modal content -->
-                                                <div class="relative bg-white rounded-lg shadow dark:bg-gray-800">
-                                                    <!-- Modal header -->
-                                                    <div
-                                                        class="flex items-start justify-between p-5 border-b rounded-t dark:border-gray-700 border-gray-200">
-                                                        <h3 class="text-xl font-semibold dark:text-white">
-                                                            Edit Kategori
-                                                        </h3>
-                                                        <button type="button"
-                                                            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-700 dark:hover:text-white"
-                                                            data-modal-toggle="edit-book-modal{{ $book->id }}">
-                                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
-                                                                xmlns="http://www.w3.org/2000/svg">
-                                                                <path fill-rule="evenodd"
-                                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                                    clip-rule="evenodd"></path>
-                                                            </svg>
-                                                        </button>
-                                                    </div>
-                                                    <!-- Modal body -->
-                                                    <div class="p-6">
-                                                        <form
-                                                            action="{{ route('books.update', ['bookId' => $book->id]) }}"
-                                                            method="post">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="flex justify-center">
-                                                                <div class="w-full max-w-md">
-                                                                    <div class="grid grid-cols-1 gap-6">
-                                                                        <!-- Input Nama -->
-                                                                        <div>
-                                                                            <label for="add_name"
-                                                                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                                                Nama <span class="text-red-500">*</span>
-                                                                            </label>
-                                                                            <input type="text" id="add_name"
-                                                                                placeholder="nama kategori" name="name"
-                                                                                value="{{ $book->name }}"
-                                                                                autocomplete="off"
-                                                                                class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                    </div>
-
-                                                    <!-- Modal footer -->
-                                                    <div
-                                                        class="flex justify-end items-center p-6 border-t border-gray-200 rounded-b dark:border-gray-700">
-                                                        <button
-                                                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                                                            type="submit">
-                                                            Simpan
-                                                        </button>
-                                                    </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
 
                                         <!-- Delete categori Modal -->
                                         <div class="fixed inset-0 z-50 flex items-center justify-center min-h-screen hidden overflow-x-hidden overflow-y-auto"
@@ -386,8 +321,8 @@
                                                             </svg>
 
                                                             <h3 class="mt-5 mb-6 text-lg text-gray-500 dark:text-gray-400">
-                                                                Yakin ingin menghapus kategori
-                                                                <b>{{ $book->name }}</b>?
+                                                                Yakin ingin menghapus buku
+                                                                <b>{{ \Illuminate\Support\Str::title($book->title) }}</b>?
                                                             </h3>
 
                                                             <!-- Tombol Submit -->
