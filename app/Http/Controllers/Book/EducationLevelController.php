@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Book;
 
 use Exception;
+use App\Models\Book\Book;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\Book\EducationLevel;
@@ -33,25 +34,40 @@ class EducationLevelController extends Controller
                 'name' => 'required|string|max:255'
             ]);
 
-            $upperName = Str::upper($request->input('name'));
-
             $educationLevel = EducationLevel::findOrFail($educationLevelId);
 
             // Cek apakah nama sudah digunakan oleh tingkat pendidikan lain
-            $alreadyUsed = EducationLevel::withTrashed()
-                ->where('name', $upperName)
+            $existingEducationLevel = EducationLevel::withTrashed()
+                ->where('name', $request->name)
                 ->where('id', '!=', $educationLevelId)
                 ->first();
 
-            if ($alreadyUsed) {
-                throw new Exception('Nama tingkat pendidikan sudah digunakan.');
+            if ($existingEducationLevel) {
+                if ($existingEducationLevel->deleted_at) {
+                    // Jika ada tingkat pendidikan yang soft deleted dengan nama yang sama
+                    // Pindahkan semua books ke tingkat pendidikan yang sudah ada (restore)
+                    Book::where('education_level_id', $educationLevel->id)
+                        ->update(['education_level_id' => $existingEducationLevel->id]);
+
+                    // Restore tingkat pendidikan yang sudah ada
+                    $existingEducationLevel->restore();
+
+                    // Hapus tingkat pendidikan yang sedang di-update
+                    $educationLevel->delete();
+
+                    return back()->with('success', 'Tingkat pendidikan berhasil diupdate dan digabung dengan tingkat pendidikan yang sudah ada');
+                } else {
+                    // Jika ada tingkat pendidikan aktif dengan nama yang sama
+                    throw new Exception('Nama tingkat pendidikan sudah digunakan oleh tingkat pendidikan lain yang aktif.');
+                }
+            } else {
+                // Jika tidak ada konflik nama, update normal
+                $educationLevel->update([
+                    'name' => $request->name
+                ]);
+
+                return back()->with('success', 'Tingkat pendidikan berhasil diupdate');
             }
-
-            $educationLevel->update([
-                'name' => $upperName
-            ]);
-
-            return back()->with('success', 'Tingkat pendidikan berhasil diupdate');
         } catch (\Throwable $th) {
             return back()->with('failed', 'Gagal mengupdate tingkat pendidikan: ' . $th->getMessage());
         }
