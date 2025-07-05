@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Book;
 
 use App\Models\Book\Book;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\Book\Category;
 use App\Models\Book\Curriculum;
+use Illuminate\Validation\Rule;
 use Illuminate\Routing\Controller;
 use App\Models\Book\EducationLevel;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class BookController extends Controller
 {
@@ -24,6 +28,11 @@ class BookController extends Controller
             'curriculum:id,name',
             'educationLevel:id,name'
         ])->sortable();
+
+        // Search
+        if ($request->input('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
 
         // Filter berdasarkan kategori 
         if ($request->input('category_id')) {
@@ -56,7 +65,10 @@ class BookController extends Controller
         }
 
         // Pagination
-        $books = $query->paginate(10)->withQueryString();
+        $books = $query
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         return view('book.books', compact(
             'books',
@@ -64,5 +76,92 @@ class BookController extends Controller
             'curriculums',
             'educationLevels'
         ));
+    }
+
+    public function create(Request $request)
+    {
+        $categories = Category::pluck('name', 'id');
+        $curriculums = Curriculum::pluck('name', 'id');
+        $educationLevels = EducationLevel::pluck('name', 'id');
+
+
+        return view('book.create-books', compact('categories', 'curriculums', 'educationLevels'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'title' => [
+                'required',
+                'string',
+                'max:288',
+                Rule::unique('books')->where(function ($query) use ($request) {
+                    return $query
+                        ->where('title', 'like', '%' . $request->title . '%')
+                        ->where('category_id', $request->category_id)
+                        ->where('education_level_id', $request->education_level_id)
+                        ->where('curriculum_id', $request->curriculum_id)
+                        ->where('grade_number', $request->grade_number)
+                        ->where('semester', $request->semester)
+                        ->whereNull('deleted_at');
+                }),
+            ],
+            'category_id' => 'required|exists:categories,id',
+            'education_level_id' => 'required|exists:education_levels,id',
+            'curriculum_id' => 'required|exists:curriculums,id',
+            'price' => 'required|numeric|min:0',
+            'grade_number' => 'required|string|in:1,2,3,4,5,6,7,8,9,10,11,12,BESAR,KECIL',
+            'semester' => 'required|in:1,2',
+            'image' => 'required|file|mimes:jpeg,png,jpg|max:2048'
+        ]);
+
+        // Handle input gambar
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = now()->format('Ymd_His') . '_' . Str::uuid() . '.' . $image->getClientOriginalExtension();
+            $imagePath = $image->storeAs('bookImages', $imageName, 'public');
+        }
+
+        // Cek apakah buku dengan kriteria tersebut ada di trash
+        $existingBook = Book::withTrashed()
+            ->where('title', 'like', '%' . $request->title . '%')
+            ->where('category_id', $request->category_id)
+            ->where('education_level_id', $request->education_level_id)
+            ->where('curriculum_id', $request->curriculum_id)
+            ->where('grade_number', $request->grade_number)
+            ->where('semester', $request->semester)
+            ->whereNotNull('deleted_at')
+            ->first();
+
+        if ($existingBook) {
+            // hapus gambar sebelumnya 
+            if ($existingBook->image && Storage::disk('public')->exists($existingBook->image)) {
+                Storage::disk('public')->delete($existingBook->image);
+            }
+
+            // update dan restore buku yang ada di trash
+            $existingBook->update([
+                'price' => $request->price,
+                'image' => $imagePath,
+                'deleted_at' => null,
+                'created_at' => now()
+            ]);
+
+        } else {
+            // Buat buku baru ketika kriteria tidak ada di trash
+            Book::create([
+                'title' => $request->title,
+                'category_id' => $request->category_id,
+                'education_level_id' => $request->education_level_id,
+                'curriculum_id' => $request->curriculum_id,
+                'price' => $request->price,
+                'grade_number' => $request->grade_number,
+                'semester' => $request->semester,
+                'image' => $imagePath,
+            ]);
+        }
+
+        return redirect()->route('books.index')->with('success', 'Buku berhasil ditambah');
     }
 }

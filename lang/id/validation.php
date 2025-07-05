@@ -279,6 +279,10 @@ return [
         'winner' => 'winner',
         'work' => 'work',
         'year' => 'tahun',
-        'new_password' => 'password baru'
+        'new_password' => 'password baru',
+        'category_id' => 'kategori',
+        'education_level_id' => 'Kelas',
+        'curriculum_id' => 'Kurikulum',
+        'grade_number' => 'kelas'
     ],
 ];
