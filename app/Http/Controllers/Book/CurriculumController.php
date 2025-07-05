@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\Book\Curriculum;
 use App\Http\Controllers\Controller;
+use App\Models\Book\Book;
 
 class CurriculumController extends Controller
 {
@@ -45,25 +46,40 @@ class CurriculumController extends Controller
                 'name' => 'required|string|max:255'
             ]);
 
-            $upperName = Str::upper($request->input('name'));
-
             $curriculum = Curriculum::findOrFail($curriculumId);
 
             // Cek apakah nama sudah digunakan oleh kurikulum lain
-            $alreadyUsed = Curriculum::withTrashed()
-                ->where('name', $upperName)
+            $existingCurriculum = Curriculum::withTrashed()
+                ->where('name', $request->name)
                 ->where('id', '!=', $curriculumId)
                 ->first();
 
-            if ($alreadyUsed) {
-                throw new Exception('Nama kurikulum sudah digunakan.');
+            if ($existingCurriculum) {
+                if ($existingCurriculum->deleted_at) {
+                    // Jika ada kurikulum yang soft deleted dengan nama yang sama
+                    // Pindahkan semua books ke kurikulum yang sudah ada (restore)
+                    Book::where('curriculum_id', $curriculum->id)
+                        ->update(['curriculum_id' => $existingCurriculum->id]);
+
+                    // Restore kurikulum yang sudah ada
+                    $existingCurriculum->restore();
+
+                    // Hapus kurikulum yang sedang di-update
+                    $curriculum->delete();
+
+                    return back()->with('success', 'Kurikulum berhasil diupdate dan digabung dengan kurikulum yang sudah ada');
+                } else {
+                    // Jika ada kurikulum aktif dengan nama yang sama
+                    throw new Exception('Nama kurikulum sudah digunakan oleh kurikulum lain yang aktif.');
+                }
+            } else {
+                // Jika tidak ada konflik nama, update normal
+                $curriculum->update([
+                    'name' => $request->name
+                ]);
+
+                return back()->with('success', 'Kurikulum berhasil diupdate');
             }
-
-            $curriculum->update([
-                'name' => $upperName
-            ]);
-
-            return back()->with('success', 'Kurikulum berhasil diupdate');
         } catch (\Throwable $th) {
             return back()->with('failed', 'Gagal mengupdate kurikulum: ' . $th->getMessage());
         }
@@ -76,11 +92,9 @@ class CurriculumController extends Controller
                 'name' => 'required|string|max:255'
             ]);
 
-            $upperName = Str::upper($request->input('name'));
-
             // Cek apakah nama sudah digunakan (termasuk yang soft deleted)
             $existing = Curriculum::withTrashed()
-                ->where('name', $upperName)
+                ->where('name', $request->name)
                 ->first();
 
             if ($existing) {
@@ -88,7 +102,7 @@ class CurriculumController extends Controller
                     // Restore dan update waktu
                     $existing->restore();
                     $existing->update([
-                        'name' => $upperName,
+                        'name' => $request->name,
                         'created_at' => now()
                     ]);
                 } else {
@@ -97,7 +111,7 @@ class CurriculumController extends Controller
                 }
             } else {
                 // Data benar-benar baru
-                Curriculum::create(['name' => $upperName]);
+                Curriculum::create(['name' => $request->name]);
             }
 
             return back()->with('success', 'Kurikulum berhasil ditambahkan');

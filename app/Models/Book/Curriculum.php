@@ -13,4 +13,8 @@ class Curriculum extends Model
 
     protected $table = 'curriculums';
     public $sortable = ['name'];
+    public function setNameAttribute($value)
+    {
+        $this->attributes['name'] = strtoupper(trim($value));
+    }
 }
