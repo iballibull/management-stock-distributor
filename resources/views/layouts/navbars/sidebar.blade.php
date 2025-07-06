@@ -108,7 +108,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{{ route('category.index') }}"
+                                    <a href="{{ route('transaction.type.index') }}"
                                         class="flex items-center p-2 text-base rounded-lg pl-11 group transition duration-75
                 {{ $elementName === 'transactionType' ? 'bg-gray-100' : 'text-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700' }}">
                                         Tipe Transaksi

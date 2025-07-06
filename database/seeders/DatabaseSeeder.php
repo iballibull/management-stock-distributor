@@ -11,6 +11,7 @@ use Database\Seeders\Book\CategorySeeder;
 use Database\Seeders\Book\CurriculumSeeder;
 use Database\Seeders\Book\EducationLevelSeeder;
 use Database\Seeders\BookTransaction\SemesterSeeder;
+use Database\Seeders\BookTransaction\TransactionTypeSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -33,7 +34,8 @@ class DatabaseSeeder extends Seeder
             CurriculumSeeder::class,
             EducationLevelSeeder::class,
             BookSeeder::class,
-            SemesterSeeder::class
+            SemesterSeeder::class,
+            TransactionTypeSeeder::class
         ]);
     }
 }

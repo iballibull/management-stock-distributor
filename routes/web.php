@@ -50,6 +50,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/semesters/{semesterId}/delete', [App\Http\Controllers\BookTransaction\SemesterController::class, 'destroy'])->name('semester.destroy');
         Route::put('/semesters/{semesterId}/update', [App\Http\Controllers\BookTransaction\SemesterController::class, 'update'])->name('semester.update');
         Route::post('/semesters', [App\Http\Controllers\BookTransaction\SemesterController::class, 'store'])->name('semester.store');
+
+        Route::get('/transaction-type', [App\Http\Controllers\BookTransaction\TransactionTypeController::class, 'index'])->name('transaction.type.index');
     });
 });
 
