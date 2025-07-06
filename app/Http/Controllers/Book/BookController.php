@@ -263,7 +263,7 @@ class BookController extends Controller
                 'grade_number' => $request->grade_number,
                 'semester' => $request->semester,
                 'image' => $imagePath,
-                'created_at' => now()
+                'created_at' => $book->created_at,
             ]);
 
             // Update data yang berelasi dengan book ini
