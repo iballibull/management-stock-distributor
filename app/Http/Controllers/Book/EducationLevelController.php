@@ -6,6 +6,7 @@ use Exception;
 use App\Models\Book\Book;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\Book\EducationLevel;
 use App\Http\Controllers\Controller;
 
@@ -44,18 +45,25 @@ class EducationLevelController extends Controller
 
             if ($existingEducationLevel) {
                 if ($existingEducationLevel->deleted_at) {
-                    // Jika ada tingkat pendidikan yang soft deleted dengan nama yang sama
-                    // Pindahkan semua books ke tingkat pendidikan yang sudah ada (restore)
-                    Book::where('education_level_id', $educationLevel->id)
-                        ->update(['education_level_id' => $existingEducationLevel->id]);
+                    try {
+                        DB::beginTransaction();
+                        // Jika ada tingkat pendidikan yang soft deleted dengan nama yang sama
+                        // Pindahkan semua books ke tingkat pendidikan yang sudah ada (restore)
+                        Book::where('education_level_id', $educationLevel->id)
+                            ->update(['education_level_id' => $existingEducationLevel->id]);
 
-                    // Restore tingkat pendidikan yang sudah ada
-                    $existingEducationLevel->restore();
+                        // Restore tingkat pendidikan yang sudah ada
+                        $existingEducationLevel->restore();
 
-                    // Hapus tingkat pendidikan yang sedang di-update
-                    $educationLevel->delete();
+                        // Hapus tingkat pendidikan yang sedang di-update
+                        $educationLevel->delete();
+                        DB::commit();
 
-                    return back()->with('success', 'Tingkat pendidikan berhasil diupdate dan digabung dengan tingkat pendidikan yang sudah ada');
+                        return back()->with('success', 'Tingkat pendidikan dan data yang berkaitan berhasil diupdate.');
+                    } catch (\Throwable $th) {
+                        DB::rollBack();
+                        return back()->with('failed', 'Gagal mengupdate tingkat pendidikan: ' . $th->getMessage());
+                    }
                 } else {
                     // Jika ada tingkat pendidikan aktif dengan nama yang sama
                     throw new Exception('Nama tingkat pendidikan sudah digunakan oleh tingkat pendidikan lain yang aktif.');

@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Book;
 
-use App\Models\Book\Book;
 use Exception;
+use App\Models\Book\Book;
 use Illuminate\Http\Request;
 use App\Models\Book\Category;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
 class CategoryController extends Controller
@@ -92,16 +93,26 @@ class CategoryController extends Controller
                 if ($existingCategory->deleted_at) {
                     // Jika ada kategori yang soft deleted dengan nama yang sama
                     // Pindahkan semua books ke kategori yang sudah ada (restore)
-                    Book::where('category_id', $category->id)
-                        ->update(['category_id' => $existingCategory->id]);
+                    try {
+                        DB::beginTransaction();
 
-                    // Restore kategori yang sudah ada
-                    $existingCategory->restore();
+                        Book::where('category_id', $category->id)
+                            ->update(['category_id' => $existingCategory->id]);
 
-                    // Hapus kategori yang sedang di-update
-                    $category->delete();
+                        // Restore kategori yang sudah ada
+                        $existingCategory->restore();
 
-                    return back()->with('success', 'Kategori berhasil diupdate dan digabung dengan kategori yang sudah ada');
+                        // Hapus kategori yang sedang di-update
+                        $category->delete();
+
+                        DB::commit();
+                        return back()->with('success', 'Kategori dan data yang berkaitan berhasil diupdate.');
+
+                    } catch (\Throwable $e) {
+                        DB::rollBack();
+                        return back()->with('failed', 'Gagal mengupdate kategori: ' . $e->getMessage());
+                    }
+
                 } else {
                     // Jika ada kategori aktif dengan nama yang sama
                     throw new Exception('Nama kategori sudah digunakan oleh kategori lain yang aktif.');

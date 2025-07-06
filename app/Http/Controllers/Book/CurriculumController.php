@@ -67,7 +67,7 @@ class CurriculumController extends Controller
                     // Hapus kurikulum yang sedang di-update
                     $curriculum->delete();
 
-                    return back()->with('success', 'Kurikulum berhasil diupdate dan digabung dengan kurikulum yang sudah ada');
+                    return back()->with('success', 'Kurikulum dan data yang berkaitan berhasil diupdate.');
                 } else {
                     // Jika ada kurikulum aktif dengan nama yang sama
                     throw new Exception('Nama kurikulum sudah digunakan oleh kurikulum lain yang aktif.');
