@@ -21,7 +21,9 @@ class CurriculumController extends Controller
             ->sortable()
             ->when($request->input('search'), function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%");
-            })->latest()
+            })
+            ->latest()
+            ->orderBy('id', 'desc')
             ->paginate(10)->appends($request->query());
 
         return view('book.curriculum', compact('curriculums'));

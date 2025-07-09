@@ -67,6 +67,7 @@ class BookController extends Controller
         // Pagination
         $books = $query
             ->latest()
+            ->orderBy('id', 'desc')
             ->paginate(10)
             ->withQueryString();
 

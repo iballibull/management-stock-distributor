@@ -27,6 +27,7 @@ class SemesterController extends Controller
         // Urutkan & paginate
         $semesters = $query
             ->latest()
+            ->orderBy('id', 'desc')
             ->paginate(10)
             ->withQueryString();
 
