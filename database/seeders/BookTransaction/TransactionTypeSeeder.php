@@ -35,7 +35,7 @@ class TransactionTypeSeeder extends Seeder
             ],
             [
                 'name' => 'MUTASI',
-                'description' => 'Barang yang akan di ambil oleh percetakan dan di ubah di pindahkan ke distributor lain',
+                'description' => 'Barang yang akan di ambil oleh percetakan dan di pindahkan ke distributor lain',
                 'created_at' => $now,
                 'updated_at' => $now,
             ]

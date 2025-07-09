@@ -283,6 +283,6 @@ return [
         'category_id' => 'kategori',
         'education_level_id' => 'Kelas',
         'curriculum_id' => 'Kurikulum',
-        'grade_number' => 'kelas'
+        'grade_number' => 'kelas',
     ],
 ];

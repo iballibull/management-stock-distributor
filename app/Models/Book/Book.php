@@ -2,10 +2,12 @@
 
 namespace App\Models\Book;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
+use Kyslik\ColumnSortable\Sortable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Kyslik\ColumnSortable\Sortable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Book extends Model
 {
@@ -42,5 +44,15 @@ class Book extends Model
     public function curriculum()
     {
         return $this->belongsTo(Curriculum::class)->withTrashed();
+    }
+
+    public function getFormattedTitleAttribute()
+    {
+        return Str::title($this->title) . ' - ' .
+            $this->category->name . ' - ' .
+            $this->educationLevel->name . ' Kelas ' .
+            $this->grade_number . ' - ' .
+            $this->curriculum->name . ' - ' . 'Semester ' .
+            $this->semester;
     }
 }

@@ -10,6 +10,7 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 
 <body class="bg-gray-50 dark:bg-gray-800" data-success="{{ e(session('success')) }}"
@@ -30,6 +31,7 @@
             @include('layouts.footers.footer')
         </div>
     </div>
+    @stack('scripts')
 </body>
 
 </html>
