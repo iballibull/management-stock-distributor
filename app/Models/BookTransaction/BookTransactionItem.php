@@ -13,8 +13,14 @@ class BookTransactionItem extends Model
     protected $fillable = [
         'book_stock_batch_id',
         'book_transaction_id',
+        'book_id',
         'quantity',
         'unit_price',
         'total_price',
+        'mutation_percentage',
+        'return_percentage',
+        'mutation_percentage',
+        'created_at',
+        'updated_at',
     ];
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\BookTransaction;
 
 use App\Models\Book\Book;
+use App\Models\BookStockBatch;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -35,52 +36,72 @@ class BookTransactionController extends Controller
         try {
             DB::beginTransaction();
 
+            $bookItems = [];
             $now = now();
-            $uuids = [];
-            $itemData = [];
+            $user = auth()->user();
 
-            // 1. Siapkan data untuk bulk insert dengan UUID
-            foreach ($books as $data) {
-                if ($data['quantity'] > 0 && $data['unit_price'] > 0) {
-                    $uuid = Str::uuid();
-                    $uuids[] = $uuid;
+            $totalQuantity = collect($books)->sum('quantity');
+            $totalValue = collect($books)->sum(function ($book) {
+                return $book['quantity'] * $book['unit_price'];
+            });
 
-                    $itemData[] = [
-                        'uuid' => $uuid,
-                        'book_stock_batch_id' => null,
-                        'quantity' => $data['quantity'],
-                        'unit_price' => $data['unit_price'],
-                        'total_price' => $data['quantity'] * $data['unit_price'],
-                        'created_at' => $now,
-                        'updated_at' => $now,
-                    ];
-                }
-            }
+            $bookTransaction = BookTransaction::create([
+                'user_id' => $user->id,
+                'semester_id' => $semesterId,
+                'transaction_type_id' => 1,  // untuk buku kedatangan (buku masuk)
+                'total_quantity' => $totalQuantity,
+                'total_value' => $totalValue,
+                'status' => $user->role_id == 1 ? 'approved' : 'pending',
+                'approved_by' => $user->role_id == 1 ? $user->id : null,
+                'approved_at' => $user->role_id == 1 ? $now : null,
+                'rejection_reason' => null,
+            ]);
 
-            // 2. Insert semua item sekaligus
-            BookTransactionItem::insert($itemData);
+            foreach ($books as $book) {
+                $bookId = $book['book_id'];
+                $quantity = $book['quantity'];
+                $unitPrice = $book['unit_price'];
+                $totalPrice = $quantity * $unitPrice;
+                $mutationPercentage = $book['mutation_percentage'];
+                $returnPercentage = $book['return_percentage'];
 
-            // 3. Ambil kembali berdasarkan UUID (anti bentrok)
-            $insertedItems = BookTransactionItem::whereIn('uuid', $uuids)
-                ->orderBy('created_at')
-                ->get();
-
-            // 4. Siapkan data transaksi
-            $transactions = [];
-            foreach ($insertedItems as $item) {
-                $transactions[] = [
-                    'user_id' => auth()->id(),
-                    'semester_id' => $semesterId,
-                    'transaction_type_id' => 1,
-                    'book_transaction_item_id' => $item->id,
-                    'status' => 'pending',
+                $bookItems[] = [
+                    'book_transaction_id' => $bookTransaction->id,
+                    'book_id' => $bookId,
+                    'book_stock_batch_id' => null,
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
+                    'total_price' => $totalPrice,
+                    'mutation_percentage' => $mutationPercentage,
+                    'return_percentage' => $returnPercentage,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
             }
 
-            // 5. Insert transaksi sekaligus
-            BookTransaction::insert($transactions);
+            BookTransactionItem::insert($bookItems);
+
+            if ($bookTransaction->status === 'approved') {
+                $bookItems = collect($bookItems)->map(function ($item) use ($semesterId, $now) {
+                    return [
+                        'book_id' => $item['book_id'],
+                        'semester_id' => $semesterId,
+                        'purchase_price' => $item['unit_price'],
+                        'quantity' => $item['quantity'],
+                        'remaining_quantity' => $item['quantity'],
+                        'mutation_percentage' => $item['mutation_percentage'],
+                        'return_percentage' => $item['return_percentage'],
+                        'max_mutation_quantity' => $item['mutation_percentage'] / 100 * $item['quantity'],
+                        'max_return_quantity' => $item['return_percentage'] / 100 * $item['quantity'],
+                        'used_return_quantity' => 0,
+                        'used_mutation_quantity' => 0,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                });
+
+                BookStockBatch::insert($bookItems->toArray());
+            }
 
             DB::commit();
             return back()->with('success', 'Stok buku berhasil ditambahkan.');

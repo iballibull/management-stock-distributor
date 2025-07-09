@@ -164,8 +164,9 @@
             class="bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700 hidden">
             <div class="p-6">
                 {{-- Form utama untuk transaksi buku --}}
-                <form id="book-transaction-form" action="{{ route('book.stock.in.create') }}" method="POST">
+                <form id="book-transaction-form" action="{{ route('book.stock.in.store') }}" method="POST">
                     @csrf
+                    @method('POST')
 
                     {{-- Hidden input untuk menyimpan ID semester yang dipilih --}}
                     <input type="hidden" name="semester_id" value="">
@@ -308,7 +309,7 @@
                         return 'bg-red-50 border border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 ' +
                             baseClass;
                     } else {
-                        return 'bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-600 focus:border-blue-600 ' +
+                        return 'bg-white border border-gray-300 text-gray-900 focus:ring-blue-600 focus:border-blue-600 ' +
                             baseClass;
                     }
                 }
@@ -382,7 +383,7 @@
                         Persentase Mutasi <span class="text-red-500">*</span>
                     </label>
                     <input type="number" name="books[${currentIndex}][mutation_percentage]" id="mutation_percentage_${currentIndex}" 
-                        min="0" max="100" step="0.1" required placeholder="0.0" autocomplete="off"
+                        min="0" max="100" step="0.01" required placeholder="0.0" autocomplete="off"
                         class="${getInputClass('mutation_percentage')}"
                         value="${oldBookData.mutation_percentage || ''}">
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Estimasi persentase buku yang bisa dimutasi (%)</p>
@@ -394,7 +395,7 @@
                         Persentase Retur <span class="text-red-500">*</span>
                     </label>
                     <input type="number" name="books[${currentIndex}][return_percentage]" id="return_percentage_${currentIndex}" 
-                        min="0" max="100" step="0.1" required placeholder="0.0" autocomplete="off"
+                        min="0" max="100" step="0.01" required placeholder="0.0" autocomplete="off"
                         class="${getInputClass('return_percentage')}"
                         value="${oldBookData.return_percentage || ''}">
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Estimasi persentase buku yang bisa diretur (%)</p>
