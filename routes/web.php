@@ -11,6 +11,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [App\Http\Controllers\User\ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [App\Http\Controllers\User\ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::get('/book-activity', [App\Http\Controllers\BookTransaction\BookActivityController::class, 'index'])->name('book.activity.index');
+    Route::get('/book-activity/{transactionId}', [App\Http\Controllers\BookTransaction\BookActivityController::class, 'detail'])->name('book.activity.detail');
+    Route::put('/book-activity/{transactionId}/cancel', [App\Http\Controllers\BookTransaction\BookActivityController::class, 'cancelled'])->name('book.activity.cancel');
+
     // Route untuk Owner saja
     Route::middleware('role:1')->group(function () {
         Route::get('/invite', [App\Http\Controllers\Auth\InviteUserController::class, 'create'])->name('invite.create');
@@ -55,7 +59,6 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/book-stock-in', [App\Http\Controllers\BookTransaction\BookTransactionController::class, 'createIn'])->name('book.stock.in.create');
         Route::post('/book-stock-in', [App\Http\Controllers\BookTransaction\BookTransactionController::class, 'storeIn'])->name('book.stock.in.store');
-
     });
 });
 

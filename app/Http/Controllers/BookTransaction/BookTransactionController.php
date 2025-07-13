@@ -107,7 +107,7 @@ class BookTransactionController extends Controller
             return back()->with('success', 'Stok buku berhasil ditambahkan.');
         } catch (\Throwable $th) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menambahkan stok buku: ' . $th->getMessage());
+            return back()->with('failed', 'Gagal menambahkan stok buku: ' . $th->getMessage());
         }
     }
 }
