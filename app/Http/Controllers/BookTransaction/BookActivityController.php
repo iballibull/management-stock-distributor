@@ -64,7 +64,6 @@ class BookActivityController extends Controller
         if ($request->filled('date_to')) {
             $query->whereDate('created_at', '<=', Carbon::parse($request->date_to));
         }
-        ;
 
         // Pagination
         $bookTransactions = $query
@@ -96,131 +95,64 @@ class BookActivityController extends Controller
         ));
     }
 
-    public function updateStatus(Request $request, BookTransaction $transaction)
+    public function cancel($transactionId)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
+            $transaction = BookTransaction::where('user_id', $user->id)->findOrFail($transactionId);
 
-        // Validasi akses berdasarkan role
-        $this->authorizeStatusUpdate($user, $transaction, $request->status);
-
-        $request->validate([
-            'status' => 'required|in:pending,approved,rejected,cancelled',
-            'notes' => 'nullable|string|max:500'
-        ]);
-
-        $oldStatus = $transaction->status;
-
-        // Update transaction
-        $updateData = [
-            'status' => $request->status,
-            'notes' => $request->notes ?? $transaction->notes,
-        ];
-
-        // Set approval fields untuk owner
-        if ($user->role === 'owner') {
-            if ($request->status === 'approved') {
-                $updateData['approved_by'] = $user->id;
-                $updateData['approved_at'] = now();
-            } elseif (in_array($request->status, ['rejected', 'cancelled'])) {
-                $updateData['approved_by'] = null;
-                $updateData['approved_at'] = null;
+            // Check if user can cancel this transaction
+            if (($user->role->name === 'Sales' || $user->role->name === 'Admin') && $transaction->user_id !== $user->id) {
+                abort(403, 'Anda hanya dapat membatalkan transaksi Anda sendiri.');
             }
+
+
+            // Validate that transaction can be cancelled
+            if (in_array($transaction->status, ['approved', 'rejected', 'cancelled'])) {
+                throw new \Exception('Hanya transaksi dengan status menunggu yang dapat dibatalkan.');
+            }
+
+            $transaction->update([
+                'status' => 'cancelled',
+            ]);
+
+            return back()->with('success', "Transaksi #{$transaction->id} berhasil dibatalkan.");
+        } catch (\Throwable $th) {
+            return back()->with('failed', 'Terjadi kesalahan saat membatalkan transaksi: ' . $th->getMessage());
         }
 
-        $transaction->update($updateData);
-
-        // Log activity
-        \Log::info('Transaction Status Updated', [
-            'transaction_id' => $transaction->id,
-            'batch_number' => $transaction->batch_number,
-            'old_status' => $oldStatus,
-            'new_status' => $request->status,
-            'updated_by' => $user->id,
-            'user_role' => $user->role,
-        ]);
-
-        $statusLabels = [
-            'pending' => 'Pending',
-            'approved' => 'Disetujui',
-            'rejected' => 'Ditolak',
-            'cancelled' => 'Dibatalkan'
-        ];
-
-        return back()->with(
-            'success',
-            "Status transaksi {$transaction->batch_number} berhasil diperbarui menjadi {$statusLabels[$request->status]}."
-        );
     }
 
-    /**
-     * Authorize status update berdasarkan role
-     */
-    private function authorizeStatusUpdate($user, $transaction, $newStatus)
+    public function reject(Request $request, $transactionId)
     {
-        switch ($user->role) {
-            case 'owner':
-                // Owner bisa mengubah ke status apapun
-                return true;
+        try {
+            $user = auth()->user();
+            $transaction = BookTransaction::findOrFail($transactionId);
 
-            case 'admin':
-                // Admin hanya bisa cancel transaksi apapun
-                if ($newStatus !== 'cancelled') {
-                    abort(403, 'Admin hanya dapat membatalkan transaksi.');
-                }
-                return true;
+            // Check if user can rejected this transaction
+            if ($user->role->name != 'Owner') {
+                abort(403, 'Anda tidak mempunyai akses menolak transaksi.');
+            }
 
-            case 'sales':
-                // Sales hanya bisa cancel transaksi mereka sendiri
-                if ($transaction->user_id !== $user->id) {
-                    abort(403, 'Anda hanya dapat mengubah transaksi Anda sendiri.');
-                }
-                if ($newStatus !== 'cancelled') {
-                    abort(403, 'Sales hanya dapat membatalkan transaksi.');
-                }
-                return true;
+            // Validate that transaction can be rejected
+            if (in_array($transaction->status, ['approved', 'rejected', 'cancelled'])) {
+                throw new \Exception('Hanya transaksi dengan status menunggu yang dapat ditolak.');
+            }
 
-            default:
-                abort(403, 'Unauthorized to update transaction status.');
+            $request->validate([
+                'rejection_reason' => 'required|string|max:500'
+            ]);
+
+            $transaction->update([
+                'status' => 'rejected',
+                'rejection_reason' => $request->rejection_reason,
+            ]);
+
+            return back()->with('success', "Transaksi #{$transaction->id} berhasil ditolak.");
+
+        } catch (\Exception $e) {
+            return back()->with('failed', 'Terjadi kesalahan saat menolak transaksi: ' . $e->getMessage());
         }
-    }
-
-    public function cancel(Request $request, BookTransaction $transaction)
-    {
-        $user = auth()->user();
-
-        // Check if user can cancel this transaction
-        if ($user->role === 'sales' && $transaction->user_id !== $user->id) {
-            abort(403, 'Anda hanya dapat membatalkan transaksi Anda sendiri.');
-        }
-
-        if (!in_array($user->role, ['sales', 'admin', 'owner'])) {
-            abort(403, 'Unauthorized to cancel transaction.');
-        }
-
-        // Validate that transaction can be cancelled
-        if (in_array($transaction->status, ['approved', 'cancelled'])) {
-            return back()->with('error', 'Transaksi yang sudah disetujui atau dibatalkan tidak dapat dibatalkan lagi.');
-        }
-
-        $request->validate([
-            'cancellation_reason' => 'required|string|max:500'
-        ]);
-
-        $transaction->update([
-            'status' => 'cancelled',
-            'notes' => $request->cancellation_reason,
-            'cancelled_by' => $user->id,
-            'cancelled_at' => now(),
-        ]);
-
-        \Log::info('Transaction Cancelled', [
-            'transaction_id' => $transaction->id,
-            'batch_number' => $transaction->batch_number,
-            'cancelled_by' => $user->id,
-            'reason' => $request->cancellation_reason,
-        ]);
-
-        return back()->with('success', "Transaksi {$transaction->batch_number} berhasil dibatalkan.");
     }
 
     public function detail($transactionId)

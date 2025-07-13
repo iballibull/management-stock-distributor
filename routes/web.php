@@ -13,7 +13,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/book-activity', [App\Http\Controllers\BookTransaction\BookActivityController::class, 'index'])->name('book.activity.index');
     Route::get('/book-activity/{transactionId}', [App\Http\Controllers\BookTransaction\BookActivityController::class, 'detail'])->name('book.activity.detail');
-    Route::put('/book-activity/{transactionId}/cancel', [App\Http\Controllers\BookTransaction\BookActivityController::class, 'cancelled'])->name('book.activity.cancel');
+    Route::patch('/book-activity/{transactionId}/cancel', [App\Http\Controllers\BookTransaction\BookActivityController::class, 'cancel'])->name('book.activity.cancel');
+    Route::patch('/book-activity/{transactionId}/rejected', [App\Http\Controllers\BookTransaction\BookActivityController::class, 'reject'])->name('book.activity.reject');
 
     // Route untuk Owner saja
     Route::middleware('role:1')->group(function () {

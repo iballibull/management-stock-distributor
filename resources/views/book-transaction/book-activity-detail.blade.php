@@ -297,10 +297,10 @@
                         <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
                             Apakah Anda yakin ingin membatalkan transaksi ini?
                         </h3>
-                        <form action="" method="POST" class="inline">
+                        <form action="{{ route('book.activity.cancel', ['transactionId' => $bookTransaction->id]) }}" method="POST" class="inline">
                             @csrf
                             @method('PATCH')
-                            <button data-modal-hide="cancel-modal" type="submit" class="text-white bg-gray-600 hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center me-2">
+                            <button data-modal-hide="cancel-modal" type="submit" class="text-white bg-gray-600 hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center me-2">
                                 Ya, Batalkan
                             </button>
                             <button data-modal-hide="cancel-modal" type="button" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">
@@ -328,7 +328,7 @@
                             <span class="sr-only">Close modal</span>
                         </button>
                     </div>
-                    <form action="" method="POST">
+                    <form action="{{ route('book.activity.reject', ['transactionId' => $bookTransaction->id]) }}" method="POST">
                         @csrf
                         @method('PATCH')
                         <div class="p-4 md:p-5 space-y-4">
