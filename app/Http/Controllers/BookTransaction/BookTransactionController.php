@@ -110,4 +110,59 @@ class BookTransactionController extends Controller
             return back()->with('failed', 'Gagal menambahkan stok buku: ' . $th->getMessage());
         }
     }
+
+    // TODO: Jika itu adalah PENGAMBILAN maka rollback stok
+    public function cancel($transactionId)
+    {
+        try {
+            $user = auth()->user();
+            $transaction = BookTransaction::where('user_id', $user->id)->findOrFail($transactionId);
+
+            // Check if user can cancel this transaction
+            if (($user->role->name === 'Sales' || $user->role->name === 'Admin') && $transaction->user_id !== $user->id) {
+                abort(403, 'Anda hanya dapat membatalkan transaksi Anda sendiri.');
+            }
+
+            // Validate that transaction can be cancelled
+            if (in_array($transaction->status, ['approved', 'rejected', 'cancelled'])) {
+                throw new \Exception('Hanya transaksi dengan status menunggu yang dapat dibatalkan.');
+            }
+
+            $transaction->update([
+                'status' => 'cancelled',
+            ]);
+
+            return back()->with('success', "Transaksi #{$transaction->id} berhasil dibatalkan.");
+        } catch (\Throwable $th) {
+            return back()->with('failed', 'Terjadi kesalahan saat membatalkan transaksi: ' . $th->getMessage());
+        }
+
+    }
+
+    // TODO: Jika itu adalah PENGAMBILAN maka rollback stok
+    public function reject(Request $request, $transactionId)
+    {
+        try {
+            $transaction = BookTransaction::findOrFail($transactionId);
+
+            // Validate that transaction can be rejected
+            if (in_array($transaction->status, ['approved', 'rejected', 'cancelled'])) {
+                throw new \Exception('Hanya transaksi dengan status menunggu yang dapat ditolak.');
+            }
+
+            $request->validate([
+                'rejection_reason' => 'required|string|max:500'
+            ]);
+
+            $transaction->update([
+                'status' => 'rejected',
+                'rejection_reason' => $request->rejection_reason,
+            ]);
+
+            return back()->with('success', "Transaksi #{$transaction->id} berhasil ditolak.");
+
+        } catch (\Exception $e) {
+            return back()->with('failed', 'Terjadi kesalahan saat menolak transaksi: ' . $e->getMessage());
+        }
+    }
 }

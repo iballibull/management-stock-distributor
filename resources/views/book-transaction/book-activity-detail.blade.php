@@ -39,7 +39,7 @@
             <div class="p-6">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div class="flex items-center gap-3">
-                        <a href="{{ url()->previous() }}" 
+                        <a href="{{ route('book.activity.index', request()->query()) }}" 
                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
                             <svg class="w-4 h-4 me-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -51,7 +51,7 @@
                                 Detail Transaksi #{{ $bookTransaction->id }}
                             </h1>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                {{ Illuminate\Support\Carbon::parse($bookTransaction->created_at)->locale('id')->translatedFormat('d F Y, H:i') }}
+                                {{ Illuminate\Support\Carbon::parse($bookTransaction->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') }}
                             </p>
                         </div>
                     </div>
@@ -297,7 +297,7 @@
                         <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
                             Apakah Anda yakin ingin membatalkan transaksi ini?
                         </h3>
-                        <form action="{{ route('book.activity.cancel', ['transactionId' => $bookTransaction->id]) }}" method="POST" class="inline">
+                        <form action="{{ route('book.transaction.cancel', ['transactionId' => $bookTransaction->id]) }}" method="POST" class="inline">
                             @csrf
                             @method('PATCH')
                             <button data-modal-hide="cancel-modal" type="submit" class="text-white bg-gray-600 hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center me-2">
@@ -328,7 +328,7 @@
                             <span class="sr-only">Close modal</span>
                         </button>
                     </div>
-                    <form action="{{ route('book.activity.reject', ['transactionId' => $bookTransaction->id]) }}" method="POST">
+                    <form action="{{ route('book.transaction.reject', ['transactionId' => $bookTransaction->id]) }}" method="POST">
                         @csrf
                         @method('PATCH')
                         <div class="p-4 md:p-5 space-y-4">

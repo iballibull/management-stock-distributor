@@ -13,8 +13,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/book-activity', [App\Http\Controllers\BookTransaction\BookActivityController::class, 'index'])->name('book.activity.index');
     Route::get('/book-activity/{transactionId}', [App\Http\Controllers\BookTransaction\BookActivityController::class, 'detail'])->name('book.activity.detail');
-    Route::patch('/book-activity/{transactionId}/cancel', [App\Http\Controllers\BookTransaction\BookActivityController::class, 'cancel'])->name('book.activity.cancel');
-    Route::patch('/book-activity/{transactionId}/rejected', [App\Http\Controllers\BookTransaction\BookActivityController::class, 'reject'])->name('book.activity.reject');
+    Route::patch('/book-activity/{transactionId}/cancel', [App\Http\Controllers\BookTransaction\BookTransactionController::class, 'cancel'])->name('book.transaction.cancel');
 
     // Route untuk Owner saja
     Route::middleware('role:1')->group(function () {
@@ -25,6 +24,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/users/{userId}/update', [App\Http\Controllers\User\UserController::class, 'update'])->name('user.update');
 
         Route::get('/roles', [App\Http\Controllers\User\RoleController::class, 'index'])->name('user.role');
+
+        Route::patch('/book-activity/{transactionId}/rejected', [App\Http\Controllers\BookTransaction\BookTransactionController::class, 'reject'])->name('book.transaction.reject');
     });
 
     // Route untuk Owner dan Admin
