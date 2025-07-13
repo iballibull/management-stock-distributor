@@ -239,56 +239,41 @@
 
                                         <td
                                             class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                            @switch($bookTransaction->transactionType->name)
-                                                @case('KEDATANGAN')
-                                                    <div
-                                                        class="inline-flex items-center gap-1 text-green-600 dark:text-green-300 text-sm font-medium">
-                                                        <svg class="w-[1em] h-[1em]" xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none" viewBox="0 0 10 14">
-                                                            <path stroke="currentColor" stroke-linecap="round"
-                                                                stroke-linejoin="round" stroke-width="2"
-                                                                d="M5 1v12m0 0 4-4m-4 4L1 9" />
-                                                        </svg>
-                                                        <span>KEDATANGAN</span>
-                                                    </div>
-                                                @break
-
-                                                @default
-                                                    <div
-                                                        class="inline-flex items-center gap-1 text-red-600 dark:text-red-400 text-sm font-medium">
-                                                        <svg class="w-[1em] h-[1em] rotate-180" xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none" viewBox="0 0 10 14">
-                                                            <path stroke="currentColor" stroke-linecap="round"
-                                                                stroke-linejoin="round" stroke-width="2"
-                                                                d="M5 1v12m0 0 4-4m-4 4L1 9" />
-                                                        </svg>
-                                                        <span>{{ $bookTransaction->transactionType->name }}</span>
-                                                    </div>
-                                            @endswitch
+                                            {{ $bookTransaction->transactionType->name }}
                                         </td>
                                         <td class="px-6 py-4 w-[200px] text-gray-900 dark:text-white text-center">
                                             @switch($bookTransaction->status)
                                                 @case('approved')
-                                                    <span
-                                                        class="bg-green-100 text-green-800 text-xs me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300 font-semibold">DI
-                                                        SETUJUI</span>
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                                        <svg class="w-3 h-3 me-1" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                        DISETUJUI
+                                                    </span>
                                                 @break
-
                                                 @case('rejected')
-                                                    <span
-                                                        class="bg-red-100 text-red-800 text-xs me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300 font-semibold">DI
-                                                        TOLAK</span>
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                                                        <svg class="w-3 h-3 me-1" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                        DITOLAK
+                                                    </span>
                                                 @break
-
                                                 @case('cancelled')
-                                                    <span
-                                                        class="bg-gray-100 text-gray-800 text-xs me-2 px-2.5 py-0.5 rounded-full dark:bg-gray-700 dark:text-gray-300 font-semibold">DI
-                                                        BATALKAN</span>
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                                        <svg class="w-3 h-3 me-1" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                        DIBATALKAN
+                                                    </span>
                                                 @break
-
                                                 @default
-                                                    <span
-                                                        class="bg-blue-100 text-blue-800 text-xs me-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300 font-semibold">MENUNGGU</span>
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                                                        <svg class="w-3 h-3 me-1" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                        MENUNGGU
+                                                    </span>
                                             @endswitch
                                         </td>
                                         <td
@@ -318,13 +303,6 @@
                                                     class="inline-flex items-center px-3 py-2 text-sm font-medium text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                                     Detail
                                                 </button>
-                                                @if ($user->id === $bookTransaction->user_id && $bookTransaction->status === 'pending')
-                                                    <button type="button"
-                                                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900"
-                                                        @click="window.location.href = '{{ route('book.activity.cancel', $bookTransaction->id) }}'">
-                                                        Batalkan
-                                                    </button>
-                                                @endif
                                             </div>
                                         </td>
                                     </tr>

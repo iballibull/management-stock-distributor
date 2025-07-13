@@ -2,8 +2,10 @@
 
 namespace App\Models\BookTransaction;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Book\Book;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class BookTransactionItem extends Model
 {
@@ -23,4 +25,9 @@ class BookTransactionItem extends Model
         'created_at',
         'updated_at',
     ];
+
+    public function book(): BelongsTo
+    {
+        return $this->belongsTo(Book::class);
+    }
 }

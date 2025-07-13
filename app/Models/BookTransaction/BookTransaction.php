@@ -3,11 +3,13 @@
 namespace App\Models\BookTransaction;
 
 use App\Models\User\User;
+use Kyslik\ColumnSortable\Sortable;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\BookTransaction\Semester;
+use App\Models\BookTransaction\BookTransactionItem;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Kyslik\ColumnSortable\Sortable;
 
 class BookTransaction extends Model
 {
@@ -52,5 +54,10 @@ class BookTransaction extends Model
     public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by')->withTrashed();
+    }
+
+    public function bookTransactionItems(): HasMany
+    {
+        return $this->hasMany(BookTransactionItem::class);
     }
 }

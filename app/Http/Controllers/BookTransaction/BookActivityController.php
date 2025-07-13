@@ -226,19 +226,20 @@ class BookActivityController extends Controller
     public function detail($transactionId)
     {
         $user = auth()->user();
-        $transaction = BookTransaction::with([
+        $role = $user->role->name;
+        $bookTransaction = BookTransaction::with([
             'user:id,name,email',
             'semester:id,name,year,semester_number',
             'transactionType:id,name',
-            'bookTransactionItems.book:id,title,price',
+            'bookTransactionItems.book',
             'approvedBy:id,name',
         ])->findOrFail($transactionId);
 
         // Cek akses
-        if ($user->role === 'Sales' && $transaction->user_id !== $user->id) {
+        if ($role === 'Sales' && $bookTransaction->user_id !== $user->id) {
             abort(403, 'Anda tidak memiliki akses untuk transaksi ini.');
         }
 
-        return view('book-transaction.detail', compact('transaction'));
+        return view('book-transaction.book-activity-detail', compact('bookTransaction', 'role', 'user'));
     }
 }
