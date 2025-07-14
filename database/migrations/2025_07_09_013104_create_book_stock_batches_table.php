@@ -21,8 +21,8 @@ return new class extends Migration {
             $table->unsignedInteger('return_percentage');
             $table->unsignedInteger('max_return_quantity');
             $table->unsignedInteger('max_mutation_quantity');
-            $table->unsignedInteger('used_return_quantity');
-            $table->unsignedInteger('used_mutation_quantity');
+            $table->unsignedInteger('remaining_return_quantity');
+            $table->unsignedInteger('remaining_mutation_quantity');
             $table->timestamps();
 
             $table->foreign('book_id')->references('id')->on('books')->onUpdate('cascade')->onDelete('restrict');

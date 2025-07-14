@@ -58,11 +58,11 @@ class SemesterController extends Controller
             $semesterNumber = $request->semester_number;
 
             if ($semesterNumber == 1) {
-                $startDate = Carbon::create($year, 1, 1);
-                $endDate = Carbon::create($year, 6, 30);
-            } else {
                 $startDate = Carbon::create($year, 7, 1);
                 $endDate = Carbon::create($year, 12, 31);
+            } else {
+                $startDate = Carbon::create($year, 1, 1);
+                $endDate = Carbon::create($year, 6, 30);
             }
 
             $semester = Semester::withTrashed()
@@ -114,11 +114,11 @@ class SemesterController extends Controller
 
             // Tentukan tanggal mulai dan akhir semester
             if ($semesterNumber == 1) {
-                $startDate = Carbon::create($year, 1, 1);
-                $endDate = Carbon::create($year, 6, 30);
-            } else {
                 $startDate = Carbon::create($year, 7, 1);
                 $endDate = Carbon::create($year, 12, 31);
+            } else {
+                $startDate = Carbon::create($year, 1, 1);
+                $endDate = Carbon::create($year, 6, 30);
             }
 
             // Cek apakah semester dengan tahun dan semester_number yang sama sudah ada di trash

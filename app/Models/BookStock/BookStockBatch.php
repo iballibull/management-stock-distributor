@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\BookStock;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,8 +16,8 @@ class BookStockBatch extends Model
         'return_percentage',
         'max_return_quantity',
         'max_mutation_quantity',
-        'used_return_quantity',
-        'used_mutation_quantity',
+        'remaining_return_quantity',
+        'remaining_mutation_quantity',
         'created_at',
         'updated_at',
     ];

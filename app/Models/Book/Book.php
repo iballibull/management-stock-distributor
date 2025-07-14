@@ -2,6 +2,7 @@
 
 namespace App\Models\Book;
 
+use App\Models\BookStock\BookStockBatch;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Kyslik\ColumnSortable\Sortable;
@@ -44,6 +45,11 @@ class Book extends Model
     public function curriculum()
     {
         return $this->belongsTo(Curriculum::class)->withTrashed();
+    }
+
+    public function bookStockBatches()
+    {
+        return $this->hasMany(BookStockBatch::class);
     }
 
     public function getFormattedTitleAttribute()
