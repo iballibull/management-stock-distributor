@@ -114,57 +114,111 @@ class BookTransactionController extends Controller
         }
     }
 
-    // TODO: Jika itu adalah PENGAMBILAN maka rollback stok
     public function cancel($transactionId)
     {
+        // Mulai transaksi database
+        DB::beginTransaction();
+
         try {
             $user = auth()->user();
-            $transaction = BookTransaction::where('user_id', $user->id)->findOrFail($transactionId);
 
-            // Check if user can cancel this transaction
+            // Cari transaksi berdasarkan ID dan user yang login
+            $transaction = BookTransaction::with(['transactionType', 'bookTransactionItems'])
+                ->where('user_id', $user->id)
+                ->findOrFail($transactionId);
+
+            // Validasi apakah user dapat membatalkan transaksi ini
             if (($user->role->name === 'Sales' || $user->role->name === 'Admin') && $transaction->user_id !== $user->id) {
                 abort(403, 'Anda hanya dapat membatalkan transaksi Anda sendiri.');
             }
 
-            // Validate that transaction can be cancelled
+            // Validasi bahwa transaksi dapat dibatalkan
             if (in_array($transaction->status, ['approved', 'rejected', 'cancelled'])) {
                 throw new \Exception('Hanya transaksi dengan status menunggu yang dapat dibatalkan.');
             }
 
+            // Update status transaksi menjadi cancelled
             $transaction->update([
                 'status' => 'cancelled',
             ]);
 
-            return back()->with('success', "Transaksi #{$transaction->id} berhasil dibatalkan.");
+            // Jika transaksi adalah PENGAMBILAN rollback stok
+            if ($transaction->transactionType->name === "PENGAMBILAN") {
+
+                // Loop melalui setiap item transaksi
+                foreach ($transaction->bookTransactionItems as $transactionItem) {
+
+                    // Kembalikan quantity ke stock batch yang sesuai
+                    BookStockBatch::where('id', $transactionItem->book_stock_batch_id)
+                        ->increment('remaining_quantity', $transactionItem->quantity);
+                }
+            }
+
+            // Commit transaksi jika semua berhasil
+            DB::commit();
+
+            return back()->with('success', "Transaksi #{$transaction->id} berhasil dibatalkan dan stok telah dikembalikan.");
+
         } catch (\Throwable $th) {
+            // Rollback transaksi jika terjadi error
+            DB::rollBack();
+
             return back()->with('failed', 'Terjadi kesalahan saat membatalkan transaksi: ' . $th->getMessage());
         }
-
     }
 
-    // TODO: Jika itu adalah PENGAMBILAN maka rollback stok
     public function reject(Request $request, $transactionId)
     {
-        try {
-            $transaction = BookTransaction::findOrFail($transactionId);
+        // Mulai transaksi database untuk memastikan atomicity
+        DB::beginTransaction();
 
-            // Validate that transaction can be rejected
+        try {
+            $user = auth()->user();
+
+            // Cari transaksi berdasarkan ID dengan eager loading
+            $transaction = BookTransaction::with(['transactionType', 'bookTransactionItems'])
+                ->findOrFail($transactionId);
+
+            // Validasi bahwa transaksi dapat ditolak
             if (in_array($transaction->status, ['approved', 'rejected', 'cancelled'])) {
                 throw new \Exception('Hanya transaksi dengan status menunggu yang dapat ditolak.');
             }
 
+            // Validasi input rejection reason
             $request->validate([
                 'rejection_reason' => 'required|string|max:500'
             ]);
 
+            // Update status transaksi menjadi rejected
             $transaction->update([
                 'status' => 'rejected',
                 'rejection_reason' => $request->rejection_reason,
+                'rejected_at' => now(),
+                'rejected_by' => $user->id,
             ]);
 
-            return back()->with('success', "Transaksi #{$transaction->id} berhasil ditolak.");
+            // Jika transaksi adalah PENGAMBILAN, rollback stok ke batch yang tepat
+            if ($transaction->transactionType->name === "PENGAMBILAN") {
+
+                // Loop melalui setiap item transaksi
+                foreach ($transaction->bookTransactionItems as $transactionItem) {
+
+                    // Kembalikan quantity ke stock batch yang sesuai
+                    BookStockBatch::where('id', $transactionItem->book_stock_batch_id)
+                        ->increment('remaining_quantity', $transactionItem->quantity);
+                }
+            }
+
+
+            // Commit transaksi jika semua berhasil
+            DB::commit();
+
+            return back()->with('success', "Transaksi #{$transaction->id} berhasil ditolak dan stok telah dikembalikan.");
 
         } catch (\Exception $e) {
+            // Rollback transaksi jika terjadi error
+            DB::rollBack();
+
             return back()->with('failed', 'Terjadi kesalahan saat menolak transaksi: ' . $e->getMessage());
         }
     }

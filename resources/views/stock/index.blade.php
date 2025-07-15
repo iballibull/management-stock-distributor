@@ -197,14 +197,34 @@
                 </div>
             @endif
 
+
             <!-- Books Grid -->
             @if ($books->count() > 0)
                 <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-8">
                     @foreach ($books as $book)
+                        <!-- Secondary Info - Only show if there are values -->
+                        @php
+                            $hasReturn =
+                                ($book->remaining_return_quantity ??
+                                    ($book->book_stock_batches_sum_remaining_return_quantity ?? 0)) >
+                                0;
+                            $hasMutation =
+                                ($book->current_semester_mutation_sum_remaining_mutation_quantity ??
+                                    ($book->book_stock_batches_sum_remaining_mutation_quantity ?? 0)) >
+                                0;
+                            $returnStock =
+                                $book->current_semester_return_sum_remaining_return_quantity ??
+                                ($book->book_stock_batches_sum_remaining_return_quantity ?? 0);
+                            $mutationStock =
+                                $book->current_semester_mutation_sum_remaining_mutation_quantity ??
+                                ($book->book_stock_batches_sum_remaining_mutation_quantity ?? 0);
+                        @endphp
                         <div class="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-lg hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600 book-card relative"
                             data-book-id="{{ $book->id }}" data-book-price="{{ $book->price }}"
                             data-book-title="{{ $book->title }}"
-                            data-book-stock="{{ $book->book_stock_batches_sum_remaining_quantity ?? 0 }}">
+                            data-book-stock="{{ $book->book_stock_batches_sum_remaining_quantity ?? 0 }}"
+                            data-book-return-stock="{{ $returnStock }}"
+                            data-book-mutation-stock="{{ $mutationStock }}">
 
                             <!-- Checkbox - Always show for available books -->
                             @if (($book->book_stock_batches_sum_remaining_quantity ?? 0) > 0 && $role !== 'Admin')
@@ -247,12 +267,6 @@
                                             </span>
                                         @endif
 
-                                        <!-- Secondary Info - Only show if there are values -->
-                                        @php
-                                            $hasReturn = ($book->current_semester_return ?? 0) > 0;
-                                            $hasMutation = ($book->current_semester_mutation ?? 0) > 0;
-                                        @endphp
-
                                         @if ($hasReturn || $hasMutation)
                                             <div class="flex flex-col gap-1">
                                                 @if ($hasReturn)
@@ -264,7 +278,7 @@
                                                                 d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
                                                                 clip-rule="evenodd" />
                                                         </svg>
-                                                        R: {{ $book->current_semester_mutation }}
+                                                        R: {{ $returnStock }}
                                                     </span>
                                                 @endif
 
@@ -277,7 +291,7 @@
                                                                 d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
                                                                 clip-rule="evenodd" />
                                                         </svg>
-                                                        M: {{ $book->current_semester_mutation }}
+                                                        M: {{ $mutationStock }}
                                                     </span>
                                                 @endif
                                             </div>
@@ -373,7 +387,7 @@
         <!-- Order Modal -->
         <div id="orderModal" tabindex="-1" aria-hidden="true"
             class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-            <div class="relative p-4 w-full max-w-2xl max-h-full">
+            <div class="relative p-4 w-full max-w-4xl max-h-full">
                 <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
                     <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Konfirmasi Pesanan</h3>
@@ -388,39 +402,105 @@
                         </button>
                     </div>
 
-                    {{-- {{ route('order.store') }} --}}
-                    <form action="" method="POST">
+                    <form action="{{ route('book.stock.order') }}" method="POST" id="orderForm">
                         @csrf
                         <div class="p-4 md:p-5 space-y-4">
-                            <div class="max-h-60 overflow-y-auto">
+                            <!-- Transaction Type Selection (Owner only) -->
+                            @if ($role === 'Owner')
+                                <div class="border rounded-lg p-4 bg-gray-50 dark:bg-gray-600">
+                                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Jenis Transaksi
+                                    </h4>
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <label
+                                            class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-500 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-300 dark:has-[:checked]:bg-blue-900/30">
+                                            <input type="radio" name="transaction_type_id" value="2" checked
+                                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
+                                                onchange="handleTransactionTypeChange()">
+                                            <div class="ml-3">
+                                                <div class="text-sm font-medium text-gray-900 dark:text-white">Pengambilan
+                                                </div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">Stok keluar biasa
+                                                </div>
+                                            </div>
+                                        </label>
+
+                                        <label
+                                            class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-500 has-[:checked]:bg-yellow-50 has-[:checked]:border-yellow-300 dark:has-[:checked]:bg-yellow-900/30">
+                                            <input type="radio" name="transaction_type_id" value="3"
+                                                class="w-4 h-4 text-yellow-600 bg-gray-100 border-gray-300 focus:ring-yellow-500"
+                                                onchange="handleTransactionTypeChange()">
+                                            <div class="ml-3">
+                                                <div class="text-sm font-medium text-gray-900 dark:text-white">Retur</div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">Buku dikembalikan
+                                                </div>
+                                            </div>
+                                        </label>
+
+                                        <label
+                                            class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-500 has-[:checked]:bg-purple-50 has-[:checked]:border-purple-300 dark:has-[:checked]:bg-purple-900/30">
+                                            <input type="radio" name="transaction_type_id" value="4"
+                                                class="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 focus:ring-purple-500"
+                                                onchange="handleTransactionTypeChange()">
+                                            <div class="ml-3">
+                                                <div class="text-sm font-medium text-gray-900 dark:text-white">Mutasi</div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">Pindah lokasi</div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <!-- Books Table -->
+                            <div class="max-h-80 overflow-y-auto">
                                 <table class="w-full text-sm">
                                     <thead class="bg-gray-50 dark:bg-gray-600 sticky top-0">
                                         <tr>
                                             <th
                                                 class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                                                Buku</th>
+                                                Buku
+                                            </th>
                                             <th
                                                 class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                                                Qty</th>
-                                            <th
-                                                class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                                                Subtotal</th>
+                                                Stok
+                                            </th>
                                             <th
                                                 class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                                                Aksi</th>
+                                                Qty
+                                            </th>
+                                            @if ($role === 'Owner')
+                                                <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
+                                                    id="returnPercentageHeader" style="display: none;">
+                                                    Retur %
+                                                </th>
+                                                <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
+                                                    id="mutationPercentageHeader" style="display: none;">
+                                                    Mutasi %
+                                                </th>
+                                            @endif
+                                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
+                                                id="subtotalHeader">
+                                                Subtotal
+                                            </th>
+                                            <th
+                                                class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
+                                                Aksi
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody id="selectedBooksTable" class="divide-y divide-gray-200 dark:divide-gray-600">
+                                        <!-- Dynamic content -->
                                     </tbody>
                                 </table>
                             </div>
 
+                            <!-- Total Section -->
                             <div class="border-t pt-4">
                                 <div class="flex justify-between items-center mb-4">
                                     <span class="font-semibold text-gray-900 dark:text-white">Total:</span>
                                     <span id="orderTotal" class="text-xl font-bold text-blue-600">Rp 0</span>
                                 </div>
 
+                                <!-- Notes -->
                                 <div>
                                     <label for="orderNotes"
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Catatan
@@ -648,6 +728,8 @@
                                 title: bookCard.dataset.bookTitle,
                                 price: parseInt(bookCard.dataset.bookPrice),
                                 stock: parseInt(bookCard.dataset.bookStock),
+                                return_stock: parseInt(bookCard.dataset.bookReturnStock || 0),
+                                mutation_stock: parseInt(bookCard.dataset.bookMutationStock || 0),
                                 quantity: 1 // Default quantity
                             };
                             selectedBooks.set(bookId, bookData);
@@ -721,55 +803,150 @@
                 updateSelection();
             }
 
+            // Handle transaction type change
+            function handleTransactionTypeChange() {
+                const transactionType = document.querySelector('input[name="transaction_type_id"]:checked').value;
+                const returnHeader = document.getElementById('returnPercentageHeader');
+                const mutationHeader = document.getElementById('mutationPercentageHeader');
+
+                // Hide all percentage columns first
+                if (returnHeader) returnHeader.style.display = 'none';
+                if (mutationHeader) mutationHeader.style.display = 'none';
+
+                // Show relevant columns based on transaction type
+                if (transactionType === '1') { // KEDATANGAN
+                    if (returnHeader) returnHeader.style.display = 'table-cell';
+                    if (mutationHeader) mutationHeader.style.display = 'table-cell';
+                }
+
+                // Refresh the modal content
+                if (selectedBooks.size > 0) {
+                    showOrderModal();
+                }
+            }
+
             function showOrderModal() {
                 if (selectedBooks.size === 0) return;
 
                 const tableBody = document.getElementById('selectedBooksTable');
                 const orderTotal = document.getElementById('orderTotal');
+                const transactionType = document.querySelector('input[name="transaction_type_id"]:checked')?.value || '2';
 
                 tableBody.innerHTML = '';
                 let total = 0;
 
                 selectedBooks.forEach(book => {
-                    const subtotal = book.price * book.quantity;
-                    total += subtotal;
+                    // Calculate subtotal based on transaction type
+                    let subtotal = 0;
+                    if (transactionType === '2') { // PENGAMBILAN - has price
+                        subtotal = book.price * book.quantity;
+                        total += subtotal;
+                    }
+
+                    const maxQuantity = getMaxQuantity(book, transactionType);
 
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-gray-50 dark:hover:bg-gray-600';
                     row.id = `book-row-${book.id}`;
-                    row.innerHTML = `
-                    <td class="px-3 py-2">
-                        <input type="hidden" name="books[${book.id}][book_id]" value="${book.id}">
-                        <input type="hidden" name="books[${book.id}][quantity]" value="${book.quantity}">
-                        <div class="font-medium text-gray-900 dark:text-white">${book.title}</div>
-                        <div class="text-gray-500 text-xs">Stok: ${book.stock}</div>
-                    </td>
-                    <td class="px-3 py-2 text-center">
-                        <input type="number" 
-                               class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
-                               value="${book.quantity}" 
-                               min="1" 
-                               max="${book.stock}"
-                               onchange="updateBookQuantity('${book.id}', this.value)">
-                    </td>
-                    <td class="px-3 py-2 text-right font-medium text-gray-900 dark:text-white" id="subtotal-${book.id}">
-                        Rp ${subtotal.toLocaleString('id-ID')}
-                    </td>
-                    <td class="px-3 py-2 text-center">
-                        <button type="button" 
-                                onclick="removeBookFromOrder('${book.id}')"
-                                class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
-                                title="Hapus item">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                        </button>
-                    </td>
-                `;
+
+                    // Build stock info based on transaction type
+                    let stockInfo = `<span class="text-sm font-medium">${book.stock}</span>`;
+                    if (transactionType === '3') {
+                        stockInfo = `
+                <div class="text-xs text-gray-500">Total: ${book.stock}</div>
+                <div class="text-sm font-medium text-blue-600">Retur: ${book.return_stock ?? 0}</div>
+            `;
+                    } else if (transactionType === '4') {
+                        stockInfo = `
+                <div class="text-xs text-gray-500">Total: ${book.stock}</div>
+                <div class="text-sm font-medium text-yellow-600">Mutasi: ${book.mutation_stock ?? 0}</div>
+            `;
+                    }
+
+                    // Build row HTML based on transaction type and role
+                    let rowHTML = `
+            <td class="px-3 py-2">
+                <input type="hidden" name="books[${book.id}][book_id]" value="${book.id}">
+                <input type="hidden" name="books[${book.id}][quantity]" value="${book.quantity}">
+                <div class="font-medium text-gray-900 dark:text-white">${book.title}</div>
+                <div class="text-gray-500 text-xs">Harga: Rp ${book.price.toLocaleString('id-ID')}</div>
+            </td>
+            <td class="px-3 py-2 text-center">
+                ${stockInfo}
+            </td>
+            <td class="px-3 py-2 text-center">
+                <input type="number" 
+                       class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
+                       value="${book.quantity}" 
+                       min="1" 
+                       max="${maxQuantity}"
+                       onchange="updateBookQuantity('${book.id}', this.value)"
+                       ${maxQuantity === 0 ? 'disabled' : ''}>
+                ${maxQuantity === 0 ? '<div class="text-xs text-red-500 mt-1">Tidak tersedia</div>' : ''}
+                ${maxQuantity > 0 ? `<div class="text-xs text-gray-500 mt-1">Maks: ${maxQuantity}</div>` : ''}
+            </td>
+        `;
+
+                    // Add percentage columns for Owner role with KEDATANGAN transaction
+                    if ('{{ $role }}' === 'Owner' && transactionType === '1') {
+                        rowHTML += `
+                <td class="px-3 py-2 text-center" id="returnPercentageCell-${book.id}">
+                    <input type="number" 
+                           name="books[${book.id}][return_percentage]"
+                           class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
+                           value="${book.return_percentage || 0}" 
+                           min="0" 
+                           max="100"
+                           onchange="validatePercentages('${book.id}')">
+                </td>
+                <td class="px-3 py-2 text-center" id="mutationPercentageCell-${book.id}">
+                    <input type="number" 
+                           name="books[${book.id}][mutation_percentage]"
+                           class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
+                           value="${book.mutation_percentage || 0}" 
+                           min="0" 
+                           max="100"
+                           onchange="validatePercentages('${book.id}')">
+                </td>
+            `;
+                    }
+
+                    // Only add subtotal column for PENGAMBILAN
+                    if (transactionType === '2') {
+                        rowHTML += `
+                <td class="px-3 py-2 text-right font-medium text-gray-900 dark:text-white" id="subtotal-${book.id}">
+                    Rp ${subtotal.toLocaleString('id-ID')}
+                </td>
+            `;
+                    }
+
+                    rowHTML += `
+            <td class="px-3 py-2 text-center">
+                <button type="button" 
+                        onclick="removeBookFromOrder('${book.id}')"
+                        class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
+                        title="Hapus item">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
+            </td>
+        `;
+
+                    row.innerHTML = rowHTML;
                     tableBody.appendChild(row);
                 });
 
-                orderTotal.textContent = 'Rp ' + total.toLocaleString('id-ID');
+                // Only show total section for PENGAMBILAN
+                const totalSection = document.querySelector('.border-t.pt-4');
+                const totalDiv = totalSection.querySelector('.flex.justify-between.items-center.mb-4');
+
+                if (transactionType === '2') {
+                    totalDiv.style.display = 'flex';
+                    orderTotal.textContent = 'Rp ' + total.toLocaleString('id-ID');
+                } else {
+                    totalDiv.style.display = 'none';
+                }
 
                 // Show modal
                 document.getElementById('orderModal').classList.remove('hidden');
@@ -777,7 +954,255 @@
 
                 // Clear notes
                 document.getElementById('orderNotes').value = '';
+
+                // Update table header to hide/show subtotal column
+                const subtotalHeader = document.getElementById('subtotalHeader');
+                if (subtotalHeader) {
+                    if (transactionType === '2') {
+                        subtotalHeader.style.display = 'table-cell';
+                    } else {
+                        subtotalHeader.style.display = 'none';
+                    }
+                }
             }
+
+            function updateBookQuantity(bookId, quantity) {
+                const book = selectedBooks.get(bookId);
+                const quantityInput = document.querySelector(`input[name="books[${bookId}][quantity]"]`);
+                const transactionType = document.querySelector('input[name="transaction_type_id"]:checked')?.value || '2';
+
+                if (book) {
+                    const newQuantity = parseInt(quantity);
+                    const maxAllowed = getMaxQuantity(book, transactionType);
+
+                    // Validate against available stock
+                    if (newQuantity > maxAllowed) {
+                        let stockType = 'stok';
+                        if (transactionType === '3') stockType = 'stok retur';
+                        if (transactionType === '4') stockType = 'stok mutasi';
+
+                        quantityInput.value = Math.min(newQuantity, maxAllowed);
+                        return;
+                    }
+
+                    // Validate against total stock
+                    if (newQuantity > book.stock) {
+                        quantityInput.value = Math.min(newQuantity, book.stock);
+                        return;
+                    }
+
+                    book.quantity = newQuantity;
+
+                    // Only update subtotal and total for PENGAMBILAN
+                    if (transactionType === '2') {
+                        const subtotal = book.price * book.quantity;
+                        const subtotalElement = document.getElementById(`subtotal-${bookId}`);
+                        if (subtotalElement) {
+                            subtotalElement.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+                        }
+
+                        // Recalculate total
+                        let total = 0;
+                        selectedBooks.forEach(b => {
+                            total += b.price * b.quantity;
+                        });
+                        document.getElementById('orderTotal').textContent = 'Rp ' + total.toLocaleString('id-ID');
+                    }
+
+                    // Update hidden input
+                    quantityInput.value = newQuantity;
+
+                    // Save to localStorage
+                    saveSelection();
+                }
+            }
+
+            function removeBookFromOrder(bookId) {
+                // Remove from selectedBooks
+                selectedBooks.delete(bookId);
+
+                // Update localStorage
+                saveSelection();
+
+                // Remove from current page checkbox if exists
+                const checkbox = document.querySelector(`.book-checkbox[data-book-id="${bookId}"]`);
+                if (checkbox) {
+                    checkbox.checked = false;
+                    const bookCard = checkbox.closest('.book-card');
+                    if (bookCard) {
+                        bookCard.classList.remove('selected');
+                    }
+                }
+
+                // Remove row from table
+                const row = document.getElementById(`book-row-${bookId}`);
+                if (row) {
+                    row.remove();
+                }
+
+                // Only update total for PENGAMBILAN
+                const transactionType = document.querySelector('input[name="transaction_type_id"]:checked')?.value || '2';
+                if (transactionType === '2') {
+                    let total = 0;
+                    selectedBooks.forEach(book => {
+                        total += book.price * book.quantity;
+                    });
+                    document.getElementById('orderTotal').textContent = 'Rp ' + total.toLocaleString('id-ID');
+                }
+
+                // Update selection UI
+                updateSelection();
+
+                // Close modal if no items left
+                if (selectedBooks.size === 0) {
+                    closeOrderModal();
+                }
+            }
+
+            // Remove stock validation from form submission - only keep percentage validation
+            document.getElementById('orderForm').addEventListener('submit', function(e) {
+                const transactionType = document.querySelector('input[name="transaction_type_id"]:checked')?.value;
+
+                // Only validate percentages for KEDATANGAN (Owner only)
+                if ('{{ $role }}' === 'Owner' && transactionType === '1') {
+                    let hasError = false;
+
+                    selectedBooks.forEach((book, bookId) => {
+                        const returnInput = document.querySelector(
+                            `input[name="books[${bookId}][return_percentage]"]`);
+                        const mutationInput = document.querySelector(
+                            `input[name="books[${bookId}][mutation_percentage]"]`);
+
+                        if (returnInput && mutationInput) {
+                            const returnPercent = parseInt(returnInput.value) || 0;
+                            const mutationPercent = parseInt(mutationInput.value) || 0;
+                            const total = returnPercent + mutationPercent;
+
+                            if (total > 100) {
+                                hasError = true;
+                            }
+                        }
+                    });
+
+                    if (hasError) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+
+            // Get maximum quantity based on transaction type
+            function getMaxQuantity(book, transactionType) {
+                switch (transactionType) {
+                    case '2': // PENGAMBILAN
+                        return book.stock;
+                    case '3': // RETUR
+                        // For return, check available return stock
+                        return Math.min(book.return_stock || 0, book.stock);
+                    case '4': // MUTASI  
+                        // For mutation, check available mutation stock
+                        return Math.min(book.mutation_stock || 0, book.stock);
+                    default:
+                        return book.stock;
+                }
+            }
+
+            // Validate return and mutation percentages
+            function validatePercentages(bookId) {
+                const returnInput = document.querySelector(`input[name="books[${bookId}][return_percentage]"]`);
+                const mutationInput = document.querySelector(`input[name="books[${bookId}][mutation_percentage]"]`);
+
+                if (returnInput && mutationInput) {
+                    const returnPercent = parseInt(returnInput.value) || 0;
+                    const mutationPercent = parseInt(mutationInput.value) || 0;
+                    const total = returnPercent + mutationPercent;
+
+                    // Clear previous error styles
+                    returnInput.classList.remove('border-red-500', 'bg-red-50');
+                    mutationInput.classList.remove('border-red-500', 'bg-red-50');
+
+                    // Remove existing error message
+                    const existingError = document.getElementById(`percentage-error-${bookId}`);
+                    if (existingError) {
+                        existingError.remove();
+                    }
+
+                    if (total > 100) {
+                        // Add error styles
+                        returnInput.classList.add('border-red-500', 'bg-red-50');
+                        mutationInput.classList.add('border-red-500', 'bg-red-50');
+
+                        // Add error message
+                        const errorDiv = document.createElement('div');
+                        errorDiv.id = `percentage-error-${bookId}`;
+                        errorDiv.className = 'text-red-500 text-xs mt-1';
+                        errorDiv.textContent = 'Total persentase tidak boleh lebih dari 100%';
+
+                        const row = document.getElementById(`book-row-${bookId}`);
+                        row.appendChild(errorDiv);
+
+                        // Disable submit button
+                        document.querySelector('button[type="submit"]').disabled = true;
+                    } else {
+                        // Enable submit button if no other errors
+                        const hasErrors = document.querySelectorAll('[id^="percentage-error-"]').length > 0;
+                        document.querySelector('button[type="submit"]').disabled = hasErrors;
+                    }
+                }
+            }
+
+            // Form validation before submit
+            document.getElementById('orderForm').addEventListener('submit', function(e) {
+                const transactionType = document.querySelector('input[name="transaction_type_id"]:checked')?.value;
+
+                if ('{{ $role }}' === 'Owner' && transactionType === '1') {
+                    // Validate percentages for KEDATANGAN
+                    let hasError = false;
+
+                    selectedBooks.forEach((book, bookId) => {
+                        const returnInput = document.querySelector(
+                            `input[name="books[${bookId}][return_percentage]"]`);
+                        const mutationInput = document.querySelector(
+                            `input[name="books[${bookId}][mutation_percentage]"]`);
+
+                        if (returnInput && mutationInput) {
+                            const returnPercent = parseInt(returnInput.value) || 0;
+                            const mutationPercent = parseInt(mutationInput.value) || 0;
+                            const total = returnPercent + mutationPercent;
+
+                            if (total > 100) {
+                                hasError = true;
+                            }
+                        }
+                    });
+
+                    if (hasError) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+
+                // Validate stock availability for retur/mutasi
+                if (transactionType === '3' || transactionType === '4') {
+                    let hasStockError = false;
+
+                    selectedBooks.forEach((book, bookId) => {
+                        const quantityInput = document.querySelector(
+                            `input[name="books[${bookId}][quantity]"]`);
+                        const quantity = parseInt(quantityInput.value);
+                        const maxAllowed = getMaxQuantity(book, transactionType);
+
+                        if (quantity > maxAllowed) {
+                            hasStockError = true;
+                        }
+                    });
+
+                    if (hasStockError) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
 
             function closeOrderModal() {
                 document.getElementById('orderModal').classList.add('hidden');
@@ -825,13 +1250,35 @@
 
             function updateBookQuantity(bookId, quantity) {
                 const book = selectedBooks.get(bookId);
+                const quantityInput = document.querySelector(`input[name="books[${bookId}][quantity]"]`);
+                const transactionType = document.querySelector('input[name="transaction_type_id"]:checked')?.value || '2';
+
                 if (book) {
-                    book.quantity = parseInt(quantity);
+                    const newQuantity = parseInt(quantity);
+                    const maxAllowed = getMaxQuantity(book, transactionType);
+
+                    // Validate against available stock
+                    if (newQuantity > maxAllowed) {
+                        let stockType = 'stok';
+                        if (transactionType === '3') stockType = 'stok retur';
+                        if (transactionType === '4') stockType = 'stok mutasi';
+
+                        quantityInput.value = Math.min(newQuantity, maxAllowed);
+                        return;
+                    }
+
+                    // Validate against total stock
+                    if (newQuantity > book.stock) {
+                        quantityInput.value = Math.min(newQuantity, book.stock);
+                        return;
+                    }
+
+                    book.quantity = newQuantity;
                     const subtotal = book.price * book.quantity;
                     document.getElementById(`subtotal-${bookId}`).textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
 
                     // Update hidden input
-                    document.querySelector(`input[name="books[${bookId}][quantity]"]`).value = quantity;
+                    quantityInput.value = newQuantity;
 
                     // Save to localStorage
                     saveSelection();

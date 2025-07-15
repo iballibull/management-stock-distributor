@@ -65,6 +65,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/book-stock-in', [App\Http\Controllers\BookTransaction\BookTransactionController::class, 'createIn'])->name('book.stock.in.create');
         Route::post('/book-stock-in', [App\Http\Controllers\BookTransaction\BookTransactionController::class, 'storeIn'])->name('book.stock.in.store');
     });
+
+    Route::middleware('role:1,3')->group(function () {
+        Route::post('/book-stock/order', [App\Http\Controllers\BookStock\BookStockController::class, 'order'])->name('book.stock.order');
+    });
 });
 
 require __DIR__ . '/auth.php';
