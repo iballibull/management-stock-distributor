@@ -1,6 +1,7 @@
 @extends('layouts.app', ['metaTitle' => 'Detail Aktivitas Transaksi Buku', 'parentSection' => 'bookTransaction', 'elementName' => 'bookActivity'])
 
 @section('content')
+    {{-- Breadcrumb Navigation --}}
     @component('layouts.headers.breadcrumbs')
         <li>
             <div class="flex items-center">
@@ -41,10 +42,11 @@
 
     <div class="col-span-full">
         <div class="space-y-6">
-            <!-- Header Section with Flowbite styling -->
+            {{-- Header Section --}}
             <div class="bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
                 <div class="p-6">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        {{-- Header Left - Back Button & Title --}}
                         <div class="flex items-center gap-3">
                             <a href="{{ route('book.activity.index', request()->query()) }}"
                                 class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
@@ -64,6 +66,7 @@
                             </div>
                         </div>
 
+                        {{-- Header Right - Action Buttons --}}
                         @if ($bookTransaction->status == 'pending')
                             @if ($role === 'Owner')
                                 <div class="flex gap-2">
@@ -91,7 +94,12 @@
                             @if ($user->id === $bookTransaction->user_id)
                                 <div class="flex gap-2">
                                     <button type="button" data-modal-target="cancel-modal" data-modal-toggle="cancel-modal"
-                                        class="text-gray700 bg-white hover:bg-gray-100 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 border border-gray-300">
+                                        class="text-gray-700 bg-white hover:bg-gray-100 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 border border-gray-300 dark:bg-gray-600 dark:text-white dark:border-gray-500 dark:hover:bg-gray-700">
+                                        <svg class="w-4 h-4 me-2 inline" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
                                         Batalkan
                                     </button>
                                 </div>
@@ -101,125 +109,131 @@
                 </div>
             </div>
 
-            <!-- Summary Card -->
-            <div class="lg:col-span-1">
-                <div
-                    class="bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 h-full">
-                    <div class="p-6 h-full flex flex-col">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Ringkasan</h3>
+            {{-- Transaction Summary Card --}}
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Informasi Transaksi</h3>
 
-                        <div class="space-y-4 flex-1">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {{-- Status --}}
+                        <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Status</span>
+                            <span class="text-sm font-semibold">
+                                @if ($bookTransaction->status === 'pending')
+                                    <span
+                                        class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
+                                        Menunggu Persetujuan
+                                    </span>
+                                @elseif ($bookTransaction->status === 'approved')
+                                    <span
+                                        class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                                        Disetujui
+                                    </span>
+                                @elseif ($bookTransaction->status === 'rejected')
+                                    <span
+                                        class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
+                                        Ditolak
+                                    </span>
+                                @else
+                                    <span
+                                        class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-gray-900 dark:text-gray-300">
+                                        {{ ucfirst($bookTransaction->status) }}
+                                    </span>
+                                @endif
+                            </span>
+                        </div>
+
+                        {{-- Transaction Type --}}
+                        <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Jenis Transaksi</span>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                {{ $bookTransaction->transactionType->name }}
+                            </span>
+                        </div>
+
+                        {{-- User --}}
+                        <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Dibuat oleh</span>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                {{ $bookTransaction->user->name }}
+                            </span>
+                        </div>
+
+                        {{-- Approved By --}}
+                        @if ($bookTransaction->approved_by)
                             <div
                                 class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
-                                <span class="text-sm text-gray-500 dark:text-gray-400">Total Jenis Buku</span>
+                                <span class="text-sm text-gray-500 dark:text-gray-400">Disetujui oleh</span>
                                 <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                                    {{ $bookTransaction->bookTransactionItems->count() }}
+                                    {{ $bookTransaction->approvedBy->name }}
                                 </span>
                             </div>
+                        @endif
 
+                        {{-- Total Quantity --}}
+                        <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Total Kuantitas</span>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                {{ number_format($bookTransaction->total_quantity) }} item
+                            </span>
+                        </div>
+
+                        {{-- Total Value --}}
+                        <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Total Nilai</span>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                Rp {{ number_format($bookTransaction->total_value, 0, ',', '.') }}
+                            </span>
+                        </div>
+
+                        {{-- Total Book Types --}}
+                        <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Total Jenis Buku</span>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                {{ $bookTransaction->bookTransactionItems->count() }} jenis
+                                @if (isset($bookTransaction->bookTransactionItems->first()->batch_count) &&
+                                        $bookTransaction->bookTransactionItems->sum('batch_count') > $bookTransaction->bookTransactionItems->count())
+                                    <span class="text-xs text-gray-400">
+                                        ({{ $bookTransaction->bookTransactionItems->sum('batch_count') }} batch)
+                                    </span>
+                                @endif
+                            </span>
+                        </div>
+
+                        {{-- Semester --}}
+                        @if ($bookTransaction->semester)
                             <div
                                 class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
-                                <span class="text-sm text-gray-500 dark:text-gray-400">Total Quantity</span>
-                                <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                                    {{ $bookTransaction->total_quantity }}
-                                </span>
-                            </div>
-
-                            <div
-                                class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
-                                <span class="text-sm text-gray-500 dark:text-gray-400">Total Nilai</span>
-                                <span class="text-sm font-bold text-gray-900 dark:text-white">
-                                    Rp {{ number_format($bookTransaction->total_value, 0, ',', '.') }}
-                                </span>
-                            </div>
-
-                            <div
-                                class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
-                                <span class="text-sm text-gray-500 dark:text-gray-400">Rata-rata per Buku</span>
-                                <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                                    Rp
-                                    {{ number_format($bookTransaction->total_value / $bookTransaction->total_quantity, 0, ',', '.') }}
-                                </span>
-                            </div>
-
-                            <div
-                                class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
-                                <span class="text-sm text-gray-500 dark:text-gray-400">Tipe Transaksi</span>
-                                <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                                    {{ $bookTransaction->transactionType->name }}
-                                </span>
-                            </div>
-
-                            <div class="flex justify-between items-center py-2">
                                 <span class="text-sm text-gray-500 dark:text-gray-400">Semester</span>
                                 <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                                    {{ $bookTransaction->semester->name }}
+                                    {{ $bookTransaction->semester->name }} {{ $bookTransaction->semester->year }}
                                 </span>
                             </div>
-                        </div>
-
-                        <!-- Status Section at bottom -->
-                        <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <div class="text-center">
-                                <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status Saat
-                                    Ini</span>
-                                <div class="mt-2">
-                                    @switch($bookTransaction->status)
-                                        @case('approved')
-                                            <span
-                                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                                                <svg class="w-4 h-4 me-1" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd"
-                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                        clip-rule="evenodd" />
-                                                </svg>
-                                                DISETUJUI
-                                            </span>
-                                        @break
-
-                                        @case('rejected')
-                                            <span
-                                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
-                                                <svg class="w-4 h-4 me-1" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd"
-                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                                        clip-rule="evenodd" />
-                                                </svg>
-                                                DITOLAK
-                                            </span>
-                                        @break
-
-                                        @case('cancelled')
-                                            <span
-                                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                                                <svg class="w-4 h-4 me-1" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd"
-                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z"
-                                                        clip-rule="evenodd" />
-                                                </svg>
-                                                DIBATALKAN
-                                            </span>
-                                        @break
-
-                                        @default
-                                            <span
-                                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
-                                                <svg class="w-4 h-4 me-1" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd"
-                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                                                        clip-rule="evenodd" />
-                                                </svg>
-                                                MENUNGGU
-                                            </span>
-                                    @endswitch
-                                </div>
-                            </div>
-                        </div>
+                        @endif
                     </div>
+
+                    {{-- Notes --}}
+                    @if ($bookTransaction->notes)
+                        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Catatan:</span>
+                            <p class="text-sm text-gray-900 dark:text-white mt-1">{{ $bookTransaction->notes }}</p>
+                        </div>
+                    @endif
+
+                    {{-- Rejection Reason --}}
+                    @if ($bookTransaction->rejection_reason)
+                        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-red-500 dark:text-red-400">Alasan Penolakan:</span>
+                            <p
+                                class="text-sm text-red-700 dark:text-red-300 mt-1 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+                                {{ $bookTransaction->rejection_reason }}
+                            </p>
+                        </div>
+                    @endif
                 </div>
             </div>
 
-            <!-- Book Details Table -->
+            {{-- Book Details Table --}}
             <div class="bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
                 <div class="p-6">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Detail Buku</h3>
@@ -228,84 +242,185 @@
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr>
-                                    <th class="px-2 py-3">No</th>
-                                    <th class="px-2 py-3">Judul Buku</th>
-                                    <th class="px-2 py-3">Kategori</th>
-                                    <th class="px-2 py-3">Tingkat</th>
-                                    <th class="px-2 py-3">Kelas</th>
-                                    <th class="px-2 py-3">Semester</th>
-                                    <th class="px-2 py-3 text-center">Qty</th>
+                                    <th class="px-6 py-3 text-center">No</th>
+                                    <th class="px-6 py-3">Judul Buku</th>
+                                    <th class="px-6 py-3 text-center">Kategori</th>
+                                    <th class="px-6 py-3 text-center">Tingkat</th>
+                                    <th class="px-6 py-3 text-center">Kelas</th>
+                                    <th class="px-6 py-3 text-center">Semester</th>
+                                    <th class="px-6 py-3 text-center">Qty</th>
                                     @if ($bookTransaction->transactionType->name === 'KEDATANGAN')
-                                        <th class="px-2 py-3 text-right">Persentase Mutasi</th>
-                                        <th class="px-2 py-3 text-right">Persentase Return</th>
-                                        <th class="px-2 py-3 text-right">Harga Beli</th>
+                                        <th class="px-6 py-3 text-center">Persentase Mutasi</th>
+                                        <th class="px-6 py-3 text-center">Persentase Return</th>
+                                        <th class="px-6 py-3 text-center">Harga Beli</th>
                                     @else
-                                        <th class="px-2 py-3 text-right">Harga</th>
+                                        <th class="px-6 py-3 text-center">Harga</th>
                                     @endif
-                                    <th class="px-2 py-3 text-right">Subtotal</th>
+                                    <th class="px-6 py-3 text-center">Subtotal</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                 @foreach ($bookTransaction->bookTransactionItems as $key => $item)
-                                    <tr
-                                        class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                        <td class="px-2 py-4 font-medium text-gray-900 dark:text-white">
+                                    <tr class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                        {{-- Number --}}
+                                        <td class="px-6 py-4 text-center font-medium text-gray-900 dark:text-white">
                                             {{ $key + 1 }}
+                                            @if (isset($item->batch_count) && $item->batch_count > 1)
+                                                <div class="text-xs text-blue-500 mt-1">
+                                                    {{ $item->batch_count }} batch
+                                                </div>
+                                            @endif
                                         </td>
-                                        <td class="px-2 py-4">
+
+                                        {{-- Book Title --}}
+                                        <td class="px-6 py-4">
                                             <div class="font-medium text-gray-900 dark:text-white">
                                                 {{ Illuminate\Support\Str::title($item->book->title) }}
                                             </div>
+                                            @if (isset($item->price_variations) && $item->price_variations)
+                                                <div class="text-xs text-orange-500 mt-1">
+                                                    <svg class="w-3 h-3 inline mr-1" fill="currentColor"
+                                                        viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                            clip-rule="evenodd" />
+                                                    </svg>
+                                                    Harga bervariasi
+                                                </div>
+                                            @endif
                                         </td>
-                                        <td class="px-2 py-4">
+
+                                        {{-- Category --}}
+                                        <td class="px-6 py-4 text-center">
                                             <span
-                                                class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                                                class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
                                                 {{ $item->book->category->name }}
                                             </span>
                                         </td>
-                                        <td class="px-2 py-4 text-center">{{ $item->book->educationLevel->name }}</td>
-                                        <td class="px-2 py-4 text-center">{{ $item->book->grade_number }}</td>
-                                        <td class="px-2 py-4 text-center">{{ $item->book->semester }}</td>
-                                        <td class="px-2 py-4 text-center font-semibold">{{ $item->quantity }}</td>
-                                        @if ($bookTransaction->transactionType->name === 'KEDATANGAN')
-                                            <td class="px-2 py-4 text-center">{{ $item->mutation_percentage }}%</td>
-                                            <td class="px-2 py-4 text-center">{{ $item->return_percentage }}%</td>
-                                        @endif
-                                        <td class="px-2 py-4 text-center">
-                                            Rp {{ number_format($item->unit_price, 0, ',', '.') }}
+
+                                        {{-- Education Level --}}
+                                        <td class="px-6 py-4 text-center">{{ $item->book->educationLevel->name }}</td>
+
+                                        {{-- Grade --}}
+                                        <td class="px-6 py-4 text-center">{{ $item->book->grade_number }}</td>
+
+                                        {{-- Semester --}}
+                                        <td class="px-6 py-4 text-center">{{ $item->book->semester }}</td>
+
+                                        {{-- Quantity --}}
+                                        <td class="px-6 py-4 text-center font-semibold">
+                                            {{ number_format($item->quantity) }}
+                                            @if (isset($item->batch_count) && $item->batch_count > 1)
+                                                <button type="button"
+                                                    class="ml-2 text-blue-600 hover:text-blue-800 text-xs"
+                                                    onclick="toggleBatchDetails('{{ $item->book_id ?? $item->book->id }}')">
+                                                    <svg class="w-3 h-3 inline transition-transform duration-200"
+                                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                    Detail
+                                                </button>
+                                            @endif
                                         </td>
-                                        <td class="px-2 py-4 text-center font-semibold">
+
+                                        {{-- Percentages for KEDATANGAN --}}
+                                        @if ($bookTransaction->transactionType->name === 'KEDATANGAN')
+                                            <td class="px-6 py-4 text-center">
+                                                {{ number_format($item->mutation_percentage ?? 0, 1) }}%
+                                            </td>
+                                            <td class="px-6 py-4 text-center">
+                                                {{ number_format($item->return_percentage ?? 0, 1) }}%
+                                            </td>
+                                        @endif
+
+                                        {{-- Unit Price --}}
+                                        <td class="px-6 py-4 text-center">
+                                            @if (isset($item->price_variations) && $item->price_variations)
+                                                <span class="text-orange-600"
+                                                    title="Harga rata-rata dari {{ $item->batch_count ?? 1 }} batch">
+                                                    Rp {{ number_format($item->unit_price, 0, ',', '.') }}
+                                                    <span class="text-xs">*</span>
+                                                </span>
+                                            @else
+                                                Rp {{ number_format($item->unit_price, 0, ',', '.') }}
+                                            @endif
+                                        </td>
+
+                                        {{-- Total Price --}}
+                                        <td class="px-6 py-4 text-center font-semibold">
                                             Rp {{ number_format($item->total_price, 0, ',', '.') }}
                                         </td>
                                     </tr>
+
+                                    {{-- Batch Details Row (Hidden by default) --}}
+                                    @if (isset($item->batch_count) && $item->batch_count > 1 && isset($item->individual_items))
+                                        <tr id="batch-details-{{ $item->book_id ?? $item->book->id }}"
+                                            class="hidden bg-gray-50 dark:bg-gray-600">
+                                            <td colspan="12" class="px-6 py-3">
+                                                <div class="text-sm">
+                                                    <h5 class="font-medium text-gray-900 dark:text-white mb-2">Detail
+                                                        Batch:</h5>
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                                        @foreach ($item->individual_items as $batchIndex => $batch)
+                                                            <div class="bg-white dark:bg-gray-700 p-3 rounded border">
+                                                                <div class="text-xs text-gray-600 dark:text-gray-300">
+                                                                    <div
+                                                                        class="font-medium text-gray-800 dark:text-gray-200 mb-1">
+                                                                        Batch {{ $batchIndex + 1 }}
+                                                                    </div>
+                                                                    <div><strong>Qty:</strong>
+                                                                        {{ number_format($batch->quantity) }}</div>
+                                                                    <div><strong>Harga:</strong> Rp
+                                                                        {{ number_format($batch->unit_price, 0, ',', '.') }}
+                                                                    </div>
+                                                                    <div><strong>Total:</strong> Rp
+                                                                        {{ number_format($batch->total_price, 0, ',', '.') }}
+                                                                    </div>
+                                                                    @if ($bookTransaction->transactionType->name === 'KEDATANGAN')
+                                                                        <div><strong>Mutasi:</strong>
+                                                                            {{ $batch->mutation_percentage ?? 0 }}%</div>
+                                                                        <div><strong>Retur:</strong>
+                                                                            {{ $batch->return_percentage ?? 0 }}%</div>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endif
                                 @endforeach
                             </tbody>
+
+                            {{-- Table Footer with Totals --}}
                             <tfoot
                                 class="text-medium text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr>
-                                    <th colspan="6" class="px-2 py-3 text-right">Total:</th>
-                                    <th class="px-2 py-3 text-center font-bold">
-                                        {{ $bookTransaction->total_quantity }}
+                                    <th colspan="6" class="px-6 py-3 text-right">Total:</th>
+                                    <th class="px-6 py-3 text-center font-bold">
+                                        {{ number_format($bookTransaction->total_quantity) }}
                                     </th>
-                                    <th class="px-2 py-3"></th>
                                     @if ($bookTransaction->transactionType->name === 'KEDATANGAN')
-                                        <th class="px-2 py-3"></th>
-                                        <th class="px-2 py-3"></th>
+                                        <th class="px-6 py-3"></th>
+                                        <th class="px-6 py-3"></th>
                                     @endif
-                                    <th class="px-2 py-3 text-right font-bold">
+                                    <th class="px-6 py-3"></th>
+                                    <th class="px-6 py-3 text-center font-bold">
                                         Rp {{ number_format($bookTransaction->total_value, 0, ',', '.') }}
                                     </th>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
-
                 </div>
             </div>
         </div>
 
-        <!-- Approve Modal - Flowbite Style -->
+        {{-- Modals --}}
         @if ($bookTransaction->status == 'pending')
+            {{-- Approve Modal --}}
             <div id="approve-modal" tabindex="-1" aria-hidden="true"
                 class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
                 <div class="relative p-4 w-full max-w-md max-h-full">
@@ -348,6 +463,7 @@
                 </div>
             </div>
 
+            {{-- Cancel Modal --}}
             <div id="cancel-modal" tabindex="-1" aria-hidden="true"
                 class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
                 <div class="relative p-4 w-full max-w-md max-h-full">
@@ -377,7 +493,7 @@
                                 @csrf
                                 @method('PATCH')
                                 <button data-modal-hide="cancel-modal" type="submit"
-                                    class="text-white bg-gray-600 hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center me-2">
+                                    class="text-white bg-gray-600 hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:focus:ring-gray-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center me-2">
                                     Ya, Batalkan
                                 </button>
                                 <button data-modal-hide="cancel-modal" type="button"
@@ -390,16 +506,13 @@
                 </div>
             </div>
 
-
-            <!-- Reject Modal - Flowbite Style -->
+            {{-- Reject Modal --}}
             <div id="reject-modal" tabindex="-1" aria-hidden="true"
                 class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
                 <div class="relative p-4 w-full max-w-2xl max-h-full">
                     <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
                         <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                                Tolak Transaksi
-                            </h3>
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Tolak Transaksi</h3>
                             <button type="button"
                                 class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
                                 data-modal-hide="reject-modal">
@@ -442,3 +555,95 @@
         @endif
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        /**
+         * Toggle detail batch untuk buku dengan multiple batch
+         * Menampilkan atau menyembunyikan detail batch individual
+         * @param {string} bookId - ID buku yang akan ditoggle detail batchnya
+         */
+        function toggleBatchDetails(bookId) {
+            const detailRow = document.getElementById(`batch-details-${bookId}`);
+            const button = event.target.closest('button');
+            const icon = button.querySelector('svg');
+
+            if (!detailRow || !button || !icon) {
+                console.error('Element tidak ditemukan untuk bookId:', bookId);
+                return;
+            }
+
+            if (detailRow.classList.contains('hidden')) {
+                // Tampilkan detail batch
+                detailRow.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+                button.innerHTML = button.innerHTML.replace('Detail', 'Tutup');
+
+                // Smooth scroll ke detail jika diperlukan
+                setTimeout(() => {
+                    detailRow.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest'
+                    });
+                }, 100);
+            } else {
+                // Sembunyikan detail batch
+                detailRow.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+                button.innerHTML = button.innerHTML.replace('Tutup', 'Detail');
+            }
+        }
+
+        /**
+         * Inisialisasi halaman detail transaksi
+         * Menambahkan event listener dan konfigurasi awal
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-hide alerts setelah 5 detik
+            const alerts = document.querySelectorAll('[role="alert"]');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.style.transition = 'opacity 0.5s ease';
+                        alert.style.opacity = '0';
+                        setTimeout(() => alert.remove(), 500);
+                    }
+                }, 5000);
+            });
+
+            // Tambahkan loading state untuk form submissions
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    const submitButton = form.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                        const originalText = submitButton.textContent;
+                        submitButton.textContent = 'Memproses...';
+
+                        // Reset setelah 10 detik jika tidak redirect
+                        setTimeout(() => {
+                            submitButton.disabled = false;
+                            submitButton.textContent = originalText;
+                        }, 10000);
+                    }
+                });
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // ESC untuk menutup modal
+                if (e.key === 'Escape') {
+                    const modals = document.querySelectorAll('[data-modal-hide]');
+                    modals.forEach(modal => {
+                        const modalId = modal.getAttribute('data-modal-hide');
+                        const modalElement = document.getElementById(modalId);
+                        if (modalElement && !modalElement.classList.contains('hidden')) {
+                            modal.click();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+@endpush

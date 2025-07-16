@@ -656,24 +656,34 @@
 
     @push('scripts')
         <script>
-            // LocalStorage keys
+            // Kunci untuk localStorage
             const STORAGE_KEY = 'book_selection';
             const STORAGE_EXPIRY = 'book_selection_expiry';
 
-            // Selection storage with expiry (24 hours)
+            // Penyimpanan global untuk buku yang dipilih
+            let selectedBooks = new Map();
+
+            /**
+             * Menyimpan pilihan buku ke localStorage dengan waktu kadaluarsa 24 jam
+             */
             function saveSelection() {
                 const data = Array.from(selectedBooks.values());
-                const expiry = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
+                const expiry = Date.now() + (24 * 60 * 60 * 1000); // 24 jam
 
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
                 localStorage.setItem(STORAGE_EXPIRY, expiry.toString());
             }
 
+            /**
+             * Memuat pilihan buku dari localStorage
+             * Menghapus data jika sudah kadaluarsa
+             * @returns {Array} Array data buku yang dipilih
+             */
             function loadSelection() {
                 try {
                     const expiry = localStorage.getItem(STORAGE_EXPIRY);
                     if (expiry && Date.now() > parseInt(expiry)) {
-                        // Expired, clear storage
+                        // Data sudah kadaluarsa, hapus dari storage
                         localStorage.removeItem(STORAGE_KEY);
                         localStorage.removeItem(STORAGE_EXPIRY);
                         return [];
@@ -682,18 +692,23 @@
                     const data = localStorage.getItem(STORAGE_KEY);
                     return data ? JSON.parse(data) : [];
                 } catch (e) {
-                    console.error('Error loading selection:', e);
+                    console.error('Error memuat pilihan:', e);
                     return [];
                 }
             }
 
+            /**
+             * Menghapus semua data pilihan dari localStorage
+             */
             function clearStoredSelection() {
                 localStorage.removeItem(STORAGE_KEY);
                 localStorage.removeItem(STORAGE_EXPIRY);
             }
 
-            let selectedBooks = new Map();
-
+            /**
+             * Memperbarui status pilihan buku dan tampilan UI
+             * Menangani checkbox dari halaman saat ini dan data tersimpan dari halaman lain
+             */
             function updateSelection() {
                 const checkboxes = document.querySelectorAll('.book-checkbox:checked');
                 const selectAllBtn = document.getElementById('selectAllBooks');
@@ -701,27 +716,27 @@
                 const clearSelectionBtn = document.getElementById('clearSelectionBtn');
                 const selectedInfo = document.getElementById('selectedInfo');
 
-                // Start with stored selections from other pages
+                // Mulai dengan pilihan tersimpan dari halaman lain
                 const storedSelection = loadSelection();
                 selectedBooks.clear();
 
-                // Add stored selections (from other pages)
+                // Tambahkan pilihan tersimpan (dari halaman lain)
                 storedSelection.forEach(book => {
                     selectedBooks.set(book.id, book);
                 });
 
-                // Remove all selected classes first
+                // Hapus semua kelas selected terlebih dahulu
                 document.querySelectorAll('.book-card').forEach(card => {
                     card.classList.remove('selected');
                 });
 
-                // Process current page checkboxes
+                // Proses checkbox halaman saat ini
                 document.querySelectorAll('.book-checkbox').forEach(checkbox => {
                     const bookCard = checkbox.closest('.book-card');
                     const bookId = checkbox.dataset.bookId;
 
                     if (checkbox.checked) {
-                        // Add or update book selection
+                        // Tambah atau perbarui pilihan buku
                         if (!selectedBooks.has(bookId)) {
                             const bookData = {
                                 id: bookId,
@@ -730,21 +745,21 @@
                                 stock: parseInt(bookCard.dataset.bookStock),
                                 return_stock: parseInt(bookCard.dataset.bookReturnStock || 0),
                                 mutation_stock: parseInt(bookCard.dataset.bookMutationStock || 0),
-                                quantity: 1 // Default quantity
+                                quantity: 1 // Kuantitas default
                             };
                             selectedBooks.set(bookId, bookData);
                         }
                         bookCard.classList.add('selected');
                     } else {
-                        // Remove book from selection if unchecked
+                        // Hapus buku dari pilihan jika tidak dicentang
                         selectedBooks.delete(bookId);
                     }
                 });
 
-                // Save updated selection to localStorage
+                // Simpan pilihan yang diperbarui ke localStorage
                 saveSelection();
 
-                // Update UI
+                // Perbarui UI
                 const count = selectedBooks.size;
                 const currentPageSelected = checkboxes.length;
 
@@ -758,27 +773,30 @@
                 orderBtn.disabled = count === 0;
                 clearSelectionBtn.disabled = count === 0;
 
-                // Update button text
+                // Perbarui teks tombol
                 if (count === 1) {
                     orderBtn.innerHTML = `<svg class="w-4 h-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                    </svg>Pesan 1 Item`;
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                </svg>Pesan 1 Item`;
                 } else if (count > 1) {
                     orderBtn.innerHTML = `<svg class="w-4 h-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                    </svg>Pesan ${count} Item`;
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                </svg>Pesan ${count} Item`;
                 } else {
                     orderBtn.innerHTML = `<svg class="w-4 h-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                    </svg>Pesan Sekarang`;
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                </svg>Pesan Sekarang`;
                 }
 
-                // Update select all checkbox
+                // Perbarui checkbox pilih semua
                 const availableCheckboxes = document.querySelectorAll('.book-checkbox:not([disabled])').length;
                 selectAllBtn.checked = currentPageSelected === availableCheckboxes && availableCheckboxes > 0;
                 selectAllBtn.indeterminate = currentPageSelected > 0 && currentPageSelected < availableCheckboxes;
             }
 
+            /**
+             * Menangani toggle untuk pilih semua buku di halaman saat ini
+             */
             function toggleSelectAll() {
                 const selectAll = document.getElementById('selectAllBooks');
                 const checkboxes = document.querySelectorAll('.book-checkbox:not([disabled])');
@@ -790,41 +808,71 @@
                 updateSelection();
             }
 
+            /**
+             * Membersihkan semua pilihan buku (halaman saat ini dan tersimpan)
+             */
             function clearAllSelection() {
-                // Clear current page checkboxes
+                // Hapus checkbox halaman saat ini
                 document.querySelectorAll('.book-checkbox').forEach(checkbox => {
                     checkbox.checked = false;
                 });
 
-                // Clear stored selection
+                // Hapus pilihan tersimpan
                 clearStoredSelection();
                 selectedBooks.clear();
 
                 updateSelection();
             }
 
-            // Handle transaction type change
+            /**
+             * Menangani perubahan jenis transaksi
+             * Menampilkan/menyembunyikan kolom persentase untuk transaksi KEDATANGAN
+             */
             function handleTransactionTypeChange() {
                 const transactionType = document.querySelector('input[name="transaction_type_id"]:checked').value;
                 const returnHeader = document.getElementById('returnPercentageHeader');
                 const mutationHeader = document.getElementById('mutationPercentageHeader');
 
-                // Hide all percentage columns first
+                // Sembunyikan semua kolom persentase terlebih dahulu
                 if (returnHeader) returnHeader.style.display = 'none';
                 if (mutationHeader) mutationHeader.style.display = 'none';
 
-                // Show relevant columns based on transaction type
+                // Tampilkan kolom yang relevan berdasarkan jenis transaksi
                 if (transactionType === '1') { // KEDATANGAN
                     if (returnHeader) returnHeader.style.display = 'table-cell';
                     if (mutationHeader) mutationHeader.style.display = 'table-cell';
                 }
 
-                // Refresh the modal content
+                // Refresh konten modal
                 if (selectedBooks.size > 0) {
                     showOrderModal();
                 }
             }
 
+            /**
+             * Mendapatkan kuantitas maksimum berdasarkan jenis transaksi
+             * @param {Object} book - Data buku
+             * @param {string} transactionType - Jenis transaksi (2=PENGAMBILAN, 3=RETUR, 4=MUTASI)
+             * @returns {number} Kuantitas maksimum yang diizinkan
+             */
+            function getMaxQuantity(book, transactionType) {
+                switch (transactionType) {
+                    case '2': // PENGAMBILAN
+                        return book.stock;
+                    case '3': // RETUR
+                        // Untuk retur, periksa stok retur yang tersedia
+                        return book.return_stock || 0;
+                    case '4': // MUTASI  
+                        // Untuk mutasi, periksa stok mutasi yang tersedia
+                        return book.mutation_stock || 0;
+                    default:
+                        return book.stock;
+                }
+            }
+
+            /**
+             * Menampilkan modal konfirmasi pesanan dengan data buku yang dipilih
+             */
             function showOrderModal() {
                 if (selectedBooks.size === 0) return;
 
@@ -836,9 +884,9 @@
                 let total = 0;
 
                 selectedBooks.forEach(book => {
-                    // Calculate subtotal based on transaction type
+                    // Hitung subtotal berdasarkan jenis transaksi
                     let subtotal = 0;
-                    if (transactionType === '2') { // PENGAMBILAN - has price
+                    if (transactionType === '2') { // PENGAMBILAN - ada harga
                         subtotal = book.price * book.quantity;
                         total += subtotal;
                     }
@@ -849,95 +897,99 @@
                     row.className = 'hover:bg-gray-50 dark:hover:bg-gray-600';
                     row.id = `book-row-${book.id}`;
 
-                    // Build stock info based on transaction type
-                    let stockInfo = `<span class="text-sm font-medium">${book.stock}</span>`;
-                    if (transactionType === '3') {
+                    // Buat info stok berdasarkan jenis transaksi
+                    let stockInfo = '';
+                    if (transactionType === '2') {
                         stockInfo = `
-                <div class="text-xs text-gray-500">Total: ${book.stock}</div>
-                <div class="text-sm font-medium text-blue-600">Retur: ${book.return_stock ?? 0}</div>
-            `;
+                        <div class="text-sm font-medium text-green-600">Tersedia: ${book.stock}</div>
+                    `;
+                    } else if (transactionType === '3') {
+                        stockInfo = `
+                        <div class="text-xs text-gray-500">Total: ${book.stock}</div>
+                        <div class="text-sm font-medium text-blue-600">Retur: ${book.return_stock || 0}</div>
+                    `;
                     } else if (transactionType === '4') {
                         stockInfo = `
-                <div class="text-xs text-gray-500">Total: ${book.stock}</div>
-                <div class="text-sm font-medium text-yellow-600">Mutasi: ${book.mutation_stock ?? 0}</div>
-            `;
+                        <div class="text-xs text-gray-500">Total: ${book.stock}</div>
+                        <div class="text-sm font-medium text-yellow-600">Mutasi: ${book.mutation_stock || 0}</div>
+                    `;
                     }
 
-                    // Build row HTML based on transaction type and role
+                    // Buat HTML baris
                     let rowHTML = `
-            <td class="px-3 py-2">
-                <input type="hidden" name="books[${book.id}][book_id]" value="${book.id}">
-                <input type="hidden" name="books[${book.id}][quantity]" value="${book.quantity}">
-                <div class="font-medium text-gray-900 dark:text-white">${book.title}</div>
-                <div class="text-gray-500 text-xs">Harga: Rp ${book.price.toLocaleString('id-ID')}</div>
-            </td>
-            <td class="px-3 py-2 text-center">
-                ${stockInfo}
-            </td>
-            <td class="px-3 py-2 text-center">
-                <input type="number" 
-                       class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
-                       value="${book.quantity}" 
-                       min="1" 
-                       max="${maxQuantity}"
-                       onchange="updateBookQuantity('${book.id}', this.value)"
-                       ${maxQuantity === 0 ? 'disabled' : ''}>
-                ${maxQuantity === 0 ? '<div class="text-xs text-red-500 mt-1">Tidak tersedia</div>' : ''}
-                ${maxQuantity > 0 ? `<div class="text-xs text-gray-500 mt-1">Maks: ${maxQuantity}</div>` : ''}
-            </td>
-        `;
+                    <td class="px-3 py-2">
+                        <input type="hidden" name="books[${book.id}][book_id]" value="${book.id}">
+                        <input type="hidden" name="books[${book.id}][quantity]" value="${book.quantity}">
+                        <div class="font-medium text-gray-900 dark:text-white">${book.title}</div>
+                        <div class="text-gray-500 text-xs">Harga: Rp ${book.price.toLocaleString('id-ID')}</div>
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                        ${stockInfo}
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                        <input type="number" 
+                               class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
+                               value="${book.quantity}" 
+                               min="1" 
+                               max="${maxQuantity}"
+                               onchange="updateBookQuantity('${book.id}', this.value)"
+                               ${maxQuantity === 0 ? 'disabled' : ''}>
+                        ${maxQuantity === 0 ? '<div class="text-xs text-red-500 mt-1">Tidak tersedia</div>' : ''}
+                        ${maxQuantity > 0 ? `<div class="text-xs text-gray-500 mt-1">Maks: ${maxQuantity}</div>` : ''}
+                    </td>
+                `;
 
-                    // Add percentage columns for Owner role with KEDATANGAN transaction
+                    // Tambahkan kolom persentase untuk Owner dengan transaksi KEDATANGAN
                     if ('{{ $role }}' === 'Owner' && transactionType === '1') {
                         rowHTML += `
-                <td class="px-3 py-2 text-center" id="returnPercentageCell-${book.id}">
-                    <input type="number" 
-                           name="books[${book.id}][return_percentage]"
-                           class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
-                           value="${book.return_percentage || 0}" 
-                           min="0" 
-                           max="100"
-                           onchange="validatePercentages('${book.id}')">
-                </td>
-                <td class="px-3 py-2 text-center" id="mutationPercentageCell-${book.id}">
-                    <input type="number" 
-                           name="books[${book.id}][mutation_percentage]"
-                           class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
-                           value="${book.mutation_percentage || 0}" 
-                           min="0" 
-                           max="100"
-                           onchange="validatePercentages('${book.id}')">
-                </td>
-            `;
+                        <td class="px-3 py-2 text-center" id="returnPercentageCell-${book.id}">
+                            <input type="number" 
+                                   name="books[${book.id}][return_percentage]"
+                                   class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
+                                   value="${book.return_percentage || 0}" 
+                                   min="0" 
+                                   max="100"
+                                   onchange="validatePercentages('${book.id}')">
+                        </td>
+                        <td class="px-3 py-2 text-center" id="mutationPercentageCell-${book.id}">
+                            <input type="number" 
+                                   name="books[${book.id}][mutation_percentage]"
+                                   class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
+                                   value="${book.mutation_percentage || 0}" 
+                                   min="0" 
+                                   max="100"
+                                   onchange="validatePercentages('${book.id}')">
+                        </td>
+                    `;
                     }
 
-                    // Only add subtotal column for PENGAMBILAN
+                    // Hanya tambahkan kolom subtotal untuk PENGAMBILAN
                     if (transactionType === '2') {
                         rowHTML += `
-                <td class="px-3 py-2 text-right font-medium text-gray-900 dark:text-white" id="subtotal-${book.id}">
-                    Rp ${subtotal.toLocaleString('id-ID')}
-                </td>
-            `;
+                        <td class="px-3 py-2 text-right font-medium text-gray-900 dark:text-white" id="subtotal-${book.id}">
+                            Rp ${subtotal.toLocaleString('id-ID')}
+                        </td>
+                    `;
                     }
 
                     rowHTML += `
-            <td class="px-3 py-2 text-center">
-                <button type="button" 
-                        onclick="removeBookFromOrder('${book.id}')"
-                        class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
-                        title="Hapus item">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                </button>
-            </td>
-        `;
+                    <td class="px-3 py-2 text-center">
+                        <button type="button" 
+                                onclick="removeBookFromOrder('${book.id}')"
+                                class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
+                                title="Hapus item">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </td>
+                `;
 
                     row.innerHTML = rowHTML;
                     tableBody.appendChild(row);
                 });
 
-                // Only show total section for PENGAMBILAN
+                // Hanya tampilkan bagian total untuk PENGAMBILAN
                 const totalSection = document.querySelector('.border-t.pt-4');
                 const totalDiv = totalSection.querySelector('.flex.justify-between.items-center.mb-4');
 
@@ -948,14 +1000,14 @@
                     totalDiv.style.display = 'none';
                 }
 
-                // Show modal
+                // Tampilkan modal
                 document.getElementById('orderModal').classList.remove('hidden');
                 document.getElementById('orderModal').classList.add('flex');
 
-                // Clear notes
+                // Kosongkan catatan
                 document.getElementById('orderNotes').value = '';
 
-                // Update table header to hide/show subtotal column
+                // Perbarui header tabel untuk menyembunyikan/menampilkan kolom subtotal
                 const subtotalHeader = document.getElementById('subtotalHeader');
                 if (subtotalHeader) {
                     if (transactionType === '2') {
@@ -966,6 +1018,11 @@
                 }
             }
 
+            /**
+             * Memperbarui kuantitas buku dalam pesanan
+             * @param {string} bookId - ID buku
+             * @param {string} quantity - Kuantitas baru
+             */
             function updateBookQuantity(bookId, quantity) {
                 const book = selectedBooks.get(bookId);
                 const quantityInput = document.querySelector(`input[name="books[${bookId}][quantity]"]`);
@@ -975,25 +1032,38 @@
                     const newQuantity = parseInt(quantity);
                     const maxAllowed = getMaxQuantity(book, transactionType);
 
-                    // Validate against available stock
+                    // Validasi terhadap stok yang tersedia
                     if (newQuantity > maxAllowed) {
                         let stockType = 'stok';
-                        if (transactionType === '3') stockType = 'stok retur';
-                        if (transactionType === '4') stockType = 'stok mutasi';
+                        let availableStock = maxAllowed;
 
-                        quantityInput.value = Math.min(newQuantity, maxAllowed);
+                        if (transactionType === '3') {
+                            stockType = 'stok retur';
+                            availableStock = book.return_stock || 0;
+                        } else if (transactionType === '4') {
+                            stockType = 'stok mutasi';
+                            availableStock = book.mutation_stock || 0;
+                        }
+
+                        // Set ke nilai maksimum yang diizinkan
+                        quantityInput.value = maxAllowed;
+
+                        // Tampilkan pesan peringatan
+                        console.warn(
+                            `${stockType} tidak mencukupi untuk ${book.title}. Tersedia: ${availableStock}, Diminta: ${newQuantity}`
+                        );
                         return;
                     }
 
-                    // Validate against total stock
-                    if (newQuantity > book.stock) {
-                        quantityInput.value = Math.min(newQuantity, book.stock);
+                    // Validasi minimum 1
+                    if (newQuantity < 1) {
+                        quantityInput.value = 1;
                         return;
                     }
 
                     book.quantity = newQuantity;
 
-                    // Only update subtotal and total for PENGAMBILAN
+                    // Hanya perbarui subtotal dan total untuk PENGAMBILAN
                     if (transactionType === '2') {
                         const subtotal = book.price * book.quantity;
                         const subtotalElement = document.getElementById(`subtotal-${bookId}`);
@@ -1001,30 +1071,36 @@
                             subtotalElement.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
                         }
 
-                        // Recalculate total
+                        // Hitung ulang total
                         let total = 0;
                         selectedBooks.forEach(b => {
-                            total += b.price * b.quantity;
+                            if (transactionType === '2') {
+                                total += b.price * b.quantity;
+                            }
                         });
                         document.getElementById('orderTotal').textContent = 'Rp ' + total.toLocaleString('id-ID');
                     }
 
-                    // Update hidden input
+                    // Perbarui input tersembunyi
                     quantityInput.value = newQuantity;
 
-                    // Save to localStorage
+                    // Simpan ke localStorage
                     saveSelection();
                 }
             }
 
+            /**
+             * Menghapus buku dari pesanan
+             * @param {string} bookId - ID buku yang akan dihapus
+             */
             function removeBookFromOrder(bookId) {
-                // Remove from selectedBooks
+                // Hapus dari selectedBooks
                 selectedBooks.delete(bookId);
 
-                // Update localStorage
+                // Perbarui localStorage
                 saveSelection();
 
-                // Remove from current page checkbox if exists
+                // Hapus dari checkbox halaman saat ini jika ada
                 const checkbox = document.querySelector(`.book-checkbox[data-book-id="${bookId}"]`);
                 if (checkbox) {
                     checkbox.checked = false;
@@ -1034,13 +1110,13 @@
                     }
                 }
 
-                // Remove row from table
+                // Hapus baris dari tabel
                 const row = document.getElementById(`book-row-${bookId}`);
                 if (row) {
                     row.remove();
                 }
 
-                // Only update total for PENGAMBILAN
+                // Hanya perbarui total untuk PENGAMBILAN
                 const transactionType = document.querySelector('input[name="transaction_type_id"]:checked')?.value || '2';
                 if (transactionType === '2') {
                     let total = 0;
@@ -1050,64 +1126,27 @@
                     document.getElementById('orderTotal').textContent = 'Rp ' + total.toLocaleString('id-ID');
                 }
 
-                // Update selection UI
+                // Perbarui UI pilihan
                 updateSelection();
 
-                // Close modal if no items left
+                // Tutup modal jika tidak ada item tersisa
                 if (selectedBooks.size === 0) {
                     closeOrderModal();
                 }
             }
 
-            // Remove stock validation from form submission - only keep percentage validation
-            document.getElementById('orderForm').addEventListener('submit', function(e) {
-                const transactionType = document.querySelector('input[name="transaction_type_id"]:checked')?.value;
-
-                // Only validate percentages for KEDATANGAN (Owner only)
-                if ('{{ $role }}' === 'Owner' && transactionType === '1') {
-                    let hasError = false;
-
-                    selectedBooks.forEach((book, bookId) => {
-                        const returnInput = document.querySelector(
-                            `input[name="books[${bookId}][return_percentage]"]`);
-                        const mutationInput = document.querySelector(
-                            `input[name="books[${bookId}][mutation_percentage]"]`);
-
-                        if (returnInput && mutationInput) {
-                            const returnPercent = parseInt(returnInput.value) || 0;
-                            const mutationPercent = parseInt(mutationInput.value) || 0;
-                            const total = returnPercent + mutationPercent;
-
-                            if (total > 100) {
-                                hasError = true;
-                            }
-                        }
-                    });
-
-                    if (hasError) {
-                        e.preventDefault();
-                        return false;
-                    }
-                }
-            });
-
-            // Get maximum quantity based on transaction type
-            function getMaxQuantity(book, transactionType) {
-                switch (transactionType) {
-                    case '2': // PENGAMBILAN
-                        return book.stock;
-                    case '3': // RETUR
-                        // For return, check available return stock
-                        return Math.min(book.return_stock || 0, book.stock);
-                    case '4': // MUTASI  
-                        // For mutation, check available mutation stock
-                        return Math.min(book.mutation_stock || 0, book.stock);
-                    default:
-                        return book.stock;
-                }
+            /**
+             * Menutup modal pesanan
+             */
+            function closeOrderModal() {
+                document.getElementById('orderModal').classList.add('hidden');
+                document.getElementById('orderModal').classList.remove('flex');
             }
 
-            // Validate return and mutation percentages
+            /**
+             * Validasi persentase retur dan mutasi untuk transaksi KEDATANGAN
+             * @param {string} bookId - ID buku
+             */
             function validatePercentages(bookId) {
                 const returnInput = document.querySelector(`input[name="books[${bookId}][return_percentage]"]`);
                 const mutationInput = document.querySelector(`input[name="books[${bookId}][mutation_percentage]"]`);
@@ -1117,184 +1156,49 @@
                     const mutationPercent = parseInt(mutationInput.value) || 0;
                     const total = returnPercent + mutationPercent;
 
-                    // Clear previous error styles
+                    // Hapus gaya error sebelumnya
                     returnInput.classList.remove('border-red-500', 'bg-red-50');
                     mutationInput.classList.remove('border-red-500', 'bg-red-50');
 
-                    // Remove existing error message
+                    // Hapus pesan error yang ada
                     const existingError = document.getElementById(`percentage-error-${bookId}`);
                     if (existingError) {
                         existingError.remove();
                     }
 
                     if (total > 100) {
-                        // Add error styles
+                        // Tambahkan gaya error
                         returnInput.classList.add('border-red-500', 'bg-red-50');
                         mutationInput.classList.add('border-red-500', 'bg-red-50');
 
-                        // Add error message
+                        // Tambahkan pesan error
                         const errorDiv = document.createElement('div');
                         errorDiv.id = `percentage-error-${bookId}`;
-                        errorDiv.className = 'text-red-500 text-xs mt-1';
+                        errorDiv.className = 'text-red-500 text-xs mt-1 col-span-2';
                         errorDiv.textContent = 'Total persentase tidak boleh lebih dari 100%';
 
                         const row = document.getElementById(`book-row-${bookId}`);
-                        row.appendChild(errorDiv);
+                        const errorRow = document.createElement('tr');
+                        errorRow.innerHTML = `<td colspan="7" class="px-3 py-1">${errorDiv.outerHTML}</td>`;
+                        row.parentNode.insertBefore(errorRow, row.nextSibling);
 
-                        // Disable submit button
+                        // Nonaktifkan tombol submit
                         document.querySelector('button[type="submit"]').disabled = true;
                     } else {
-                        // Enable submit button if no other errors
-                        const hasErrors = document.querySelectorAll('[id^="percentage-error-"]').length > 0;
-                        document.querySelector('button[type="submit"]').disabled = hasErrors;
+                        // Aktifkan tombol submit jika tidak ada error lain
+                        const hasErrors = document.querySelectorAll('[id^="percentage-error-"]').length === 0;
+                        document.querySelector('button[type="submit"]').disabled = !hasErrors;
                     }
                 }
             }
 
-            // Form validation before submit
-            document.getElementById('orderForm').addEventListener('submit', function(e) {
-                const transactionType = document.querySelector('input[name="transaction_type_id"]:checked')?.value;
 
-                if ('{{ $role }}' === 'Owner' && transactionType === '1') {
-                    // Validate percentages for KEDATANGAN
-                    let hasError = false;
-
-                    selectedBooks.forEach((book, bookId) => {
-                        const returnInput = document.querySelector(
-                            `input[name="books[${bookId}][return_percentage]"]`);
-                        const mutationInput = document.querySelector(
-                            `input[name="books[${bookId}][mutation_percentage]"]`);
-
-                        if (returnInput && mutationInput) {
-                            const returnPercent = parseInt(returnInput.value) || 0;
-                            const mutationPercent = parseInt(mutationInput.value) || 0;
-                            const total = returnPercent + mutationPercent;
-
-                            if (total > 100) {
-                                hasError = true;
-                            }
-                        }
-                    });
-
-                    if (hasError) {
-                        e.preventDefault();
-                        return false;
-                    }
-                }
-
-                // Validate stock availability for retur/mutasi
-                if (transactionType === '3' || transactionType === '4') {
-                    let hasStockError = false;
-
-                    selectedBooks.forEach((book, bookId) => {
-                        const quantityInput = document.querySelector(
-                            `input[name="books[${bookId}][quantity]"]`);
-                        const quantity = parseInt(quantityInput.value);
-                        const maxAllowed = getMaxQuantity(book, transactionType);
-
-                        if (quantity > maxAllowed) {
-                            hasStockError = true;
-                        }
-                    });
-
-                    if (hasStockError) {
-                        e.preventDefault();
-                        return false;
-                    }
-                }
-            });
-
-            function closeOrderModal() {
-                document.getElementById('orderModal').classList.add('hidden');
-                document.getElementById('orderModal').classList.remove('flex');
-            }
-
-            function removeBookFromOrder(bookId) {
-                // Remove from selectedBooks
-                selectedBooks.delete(bookId);
-
-                // Update localStorage
-                saveSelection();
-
-                // Remove from current page checkbox if exists
-                const checkbox = document.querySelector(`.book-checkbox[data-book-id="${bookId}"]`);
-                if (checkbox) {
-                    checkbox.checked = false;
-                    const bookCard = checkbox.closest('.book-card');
-                    if (bookCard) {
-                        bookCard.classList.remove('selected');
-                    }
-                }
-
-                // Remove row from table
-                const row = document.getElementById(`book-row-${bookId}`);
-                if (row) {
-                    row.remove();
-                }
-
-                // Update total
-                let total = 0;
-                selectedBooks.forEach(book => {
-                    total += book.price * book.quantity;
-                });
-                document.getElementById('orderTotal').textContent = 'Rp ' + total.toLocaleString('id-ID');
-
-                // Update selection UI
-                updateSelection();
-
-                // Close modal if no items left
-                if (selectedBooks.size === 0) {
-                    closeOrderModal();
-                }
-            }
-
-            function updateBookQuantity(bookId, quantity) {
-                const book = selectedBooks.get(bookId);
-                const quantityInput = document.querySelector(`input[name="books[${bookId}][quantity]"]`);
-                const transactionType = document.querySelector('input[name="transaction_type_id"]:checked')?.value || '2';
-
-                if (book) {
-                    const newQuantity = parseInt(quantity);
-                    const maxAllowed = getMaxQuantity(book, transactionType);
-
-                    // Validate against available stock
-                    if (newQuantity > maxAllowed) {
-                        let stockType = 'stok';
-                        if (transactionType === '3') stockType = 'stok retur';
-                        if (transactionType === '4') stockType = 'stok mutasi';
-
-                        quantityInput.value = Math.min(newQuantity, maxAllowed);
-                        return;
-                    }
-
-                    // Validate against total stock
-                    if (newQuantity > book.stock) {
-                        quantityInput.value = Math.min(newQuantity, book.stock);
-                        return;
-                    }
-
-                    book.quantity = newQuantity;
-                    const subtotal = book.price * book.quantity;
-                    document.getElementById(`subtotal-${bookId}`).textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
-
-                    // Update hidden input
-                    quantityInput.value = newQuantity;
-
-                    // Save to localStorage
-                    saveSelection();
-
-                    // Recalculate total
-                    let total = 0;
-                    selectedBooks.forEach(b => {
-                        total += b.price * b.quantity;
-                    });
-                    document.getElementById('orderTotal').textContent = 'Rp ' + total.toLocaleString('id-ID');
-                }
-            }
-
-            // Add click handler for book cards to toggle selection
+            /**
+             * Menangani klik pada kartu buku untuk toggle pilihan
+             * @param {Event} event - Event klik
+             */
             function handleBookCardClick(event) {
-                // Don't trigger if clicking on checkbox directly
+                // Jangan trigger jika mengklik checkbox secara langsung
                 if (event.target.type === 'checkbox') return;
 
                 const bookCard = event.currentTarget;
@@ -1306,9 +1210,23 @@
                 }
             }
 
-            // Initialize page
+            /**
+             * Membersihkan pilihan setelah pesanan berhasil dibuat
+             */
+            function clearSelectionAfterOrder() {
+                clearStoredSelection();
+                selectedBooks.clear();
+                document.querySelectorAll('.book-checkbox').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                updateSelection();
+            }
+
+            /**
+             * Inisialisasi halaman dengan event listener dan data tersimpan
+             */
             function initializePage() {
-                // Load stored selection and check appropriate checkboxes
+                // Muat pilihan tersimpan dan centang checkbox yang sesuai
                 const storedSelection = loadSelection();
                 const storedIds = storedSelection.map(book => book.id);
 
@@ -1319,13 +1237,13 @@
                     }
                 });
 
-                // Add event listeners
+                // Tambahkan event listener
                 const selectAllBtn = document.getElementById('selectAllBooks');
                 if (selectAllBtn) {
                     selectAllBtn.addEventListener('change', toggleSelectAll);
                 }
 
-                // Add click handlers to book cards
+                // Tambahkan handler klik untuk kartu buku
                 document.querySelectorAll('.book-card').forEach(card => {
                     const checkbox = card.querySelector('.book-checkbox');
                     if (checkbox) {
@@ -1334,39 +1252,90 @@
                     }
                 });
 
-                // Add escape key listener to close modal
+                // Tambahkan listener tombol Escape untuk menutup modal
                 document.addEventListener('keydown', function(event) {
                     if (event.key === 'Escape') {
                         closeOrderModal();
                     }
                 });
 
-                // Add click outside modal to close
+                // Tambahkan klik di luar modal untuk menutup
                 document.getElementById('orderModal').addEventListener('click', function(event) {
                     if (event.target === this) {
                         closeOrderModal();
                     }
                 });
 
-                // Initial selection update
+                // Perbarui pilihan awal
                 updateSelection();
             }
 
-            // Clear selection after successful order
-            function clearSelectionAfterOrder() {
-                clearStoredSelection();
-                selectedBooks.clear();
-                document.querySelectorAll('.book-checkbox').forEach(checkbox => {
-                    checkbox.checked = false;
+            // Validasi form sebelum submit
+            document.getElementById('orderForm').addEventListener('submit', function(e) {
+                const transactionType = document.querySelector('input[name="transaction_type_id"]:checked')?.value;
+
+                // Validasi ketersediaan stok untuk semua tipe transaksi
+                let hasStockError = false;
+                let errorMessages = [];
+
+                selectedBooks.forEach((book, bookId) => {
+                    const quantityInput = document.querySelector(`input[name="books[${bookId}][quantity]"]`);
+                    const quantity = parseInt(quantityInput.value);
+                    const maxAllowed = getMaxQuantity(book, transactionType);
+
+                    if (quantity > maxAllowed) {
+                        hasStockError = true;
+                        let stockType = 'stok';
+                        if (transactionType === '3') stockType = 'stok retur';
+                        if (transactionType === '4') stockType = 'stok mutasi';
+
+                        errorMessages.push(
+                            `${book.title}: ${stockType} tidak mencukupi (tersedia: ${maxAllowed}, diminta: ${quantity})`
+                        );
+                    }
                 });
-                updateSelection();
-            }
 
-            // Handle successful order submission
+                if (hasStockError) {
+                    e.preventDefault();
+                    alert('Stok tidak mencukupi:\n' + errorMessages.join('\n'));
+                    return false;
+                }
+
+                // Validasi persentase untuk KEDATANGAN (hanya Owner)
+                if ('{{ $role }}' === 'Owner' && transactionType === '1') {
+                    let hasPercentageError = false;
+
+                    selectedBooks.forEach((book, bookId) => {
+                        const returnInput = document.querySelector(
+                            `input[name="books[${bookId}][return_percentage]"]`);
+                        const mutationInput = document.querySelector(
+                            `input[name="books[${bookId}][mutation_percentage]"]`);
+
+                        if (returnInput && mutationInput) {
+                            const returnPercent = parseInt(returnInput.value) || 0;
+                            const mutationPercent = parseInt(mutationInput.value) || 0;
+                            const total = returnPercent + mutationPercent;
+
+                            if (total > 100) {
+                                hasPercentageError = true;
+                            }
+                        }
+                    });
+
+                    if (hasPercentageError) {
+                        e.preventDefault();
+                        alert('Total persentase retur dan mutasi tidak boleh lebih dari 100%');
+                        return false;
+                    }
+                }
+            });
+
+
+            // Inisialisasi saat halaman dimuat
             document.addEventListener('DOMContentLoaded', function() {
                 initializePage();
 
-                // Listen for successful order submission
+                // Dengarkan submit pesanan yang berhasil
                 @if (session('success'))
                     clearSelectionAfterOrder();
                 @endif

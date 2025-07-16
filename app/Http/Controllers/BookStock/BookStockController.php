@@ -4,6 +4,7 @@ namespace App\Http\Controllers\BookStock;
 
 use App\Models\Book\Book;
 use App\Models\BookTransaction\BookTransactionItem;
+use App\Models\Transaction\Transaction;
 use Illuminate\Http\Request;
 use App\Models\Book\Category;
 use App\Models\Book\Curriculum;
@@ -130,109 +131,192 @@ class BookStockController extends Controller
     {
         // Validasi input dari request
         $request->validate([
-            'books' => 'required|array',
+            'books' => 'required|array|min:1',
             'books.*.book_id' => 'required|exists:books,id',
             'books.*.quantity' => 'required|integer|min:1',
-            'transaction_type_id' => 'exists:transaction_types,id',
+            'transaction_type_id' => 'required|exists:transaction_types,id',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $books = $request->input('books');
-
-        // Tentukan tipe transaksi berdasarkan role user (Sales = 2, Owner dari input)
-        $transactionTypeId = auth()->user()->role_id == 3 ? 2 : $request->input('transaction_type_id');
         $user = auth()->user();
 
-        // Mulai transaksi database 
+        // Tentukan tipe transaksi - Sales hanya bisa melakukan PENGAMBILAN (tipe 2)
+        $transactionTypeId = $user->role_id == 3 ? 2 : $request->input('transaction_type_id');
+
+        // Mulai transaksi database untuk atomicity
         DB::beginTransaction();
 
         try {
-            // Pre-validasi: Cek ketersediaan stok sebelum memproses apapun
+            // ===== PRE-VALIDASI: CEK KETERSEDIAAN STOK =====
+            // Validasi ketersediaan stok untuk setiap buku berdasarkan tipe transaksi
             foreach ($books as $bookOrder) {
-                $availableStock = BookStockBatch::where('book_id', $bookOrder['book_id'])
-                    ->sum('remaining_quantity');
+                $bookId = $bookOrder['book_id'];
+                $requestedQuantity = $bookOrder['quantity'];
 
-                // Jika stok tidak mencukupi, throw exception
-                if ($availableStock < $bookOrder['quantity']) {
-                    $book = Book::select('id', 'title')->find($bookOrder['book_id']);
+                // Tentukan kolom stok yang akan dicek berdasarkan tipe transaksi
+                $availableStock = 0;
+                if ($transactionTypeId == 2) {
+                    $availableStock = BookStockBatch::where('book_id', $bookId)->sum('remaining_quantity');
+                } elseif ($transactionTypeId == 3) {
+                    $availableStock = BookStockBatch::where('book_id', $bookId)->sum('remaining_return_quantity');
+                } elseif ($transactionTypeId == 4) {
+                    $availableStock = BookStockBatch::where('book_id', $bookId)->sum('remaining_mutation_quantity');
+                }
+
+                // Jika stok tidak mencukupi, lempar exception
+                if ($availableStock < $requestedQuantity) {
+                    $book = Book::select('id', 'title')->find($bookId);
+                    $stockType = 'Stok';
+                    if ($transactionTypeId == 3) {
+                        $stockType = 'Stok retur';
+                    } elseif ($transactionTypeId == 4) {
+                        $stockType = 'Stok mutasi';
+                    }
+
                     throw new \Exception(
-                        "Stok tidak mencukupi untuk buku '{$book->title}'. " .
-                        "Tersedia: {$availableStock}, Diminta: {$bookOrder['quantity']}"
+                        "{$stockType} tidak mencukupi untuk buku '{$book->title}'. " .
+                        "Tersedia: {$availableStock}, Diminta: {$requestedQuantity}"
                     );
                 }
             }
 
-            // Hitung total nilai dan quantity dengan benar
+            // ===== INISIALISASI VARIABEL PERHITUNGAN =====
             $totalValue = 0;
+            $totalPurchase = 0; // Perbaiki typo dari $totalPurcase
             $totalQuantity = collect($books)->sum('quantity');
-
-            foreach ($books as $bookOrder) {
-                $book = Book::find($bookOrder['book_id']);
-                $totalValue += $book->price * $bookOrder['quantity'];
-            }
 
             // Dapatkan semester aktif saat ini
             $currentSemesterId = Semester::where('start_date', '<=', now())
                 ->where('end_date', '>=', now())
                 ->value('id');
 
-            // Buat record transaksi buku utama
+            // ===== BUAT RECORD TRANSAKSI BUKU UTAMA =====
+            // Dibuat dengan total_value = 0, akan diupdate setelah memproses semua item
             $bookTransaction = BookTransaction::create([
                 'user_id' => $user->id,
                 'transaction_type_id' => $transactionTypeId,
                 'total_quantity' => $totalQuantity,
-                'total_value' => $totalValue,
-                'status' => 'pending',
+                'total_value' => 0, // Akan dihitung selama pemrosesan
+                'status' => $user->role_id == 1 ? 'approved' : 'pending', // Owner otomatis approved
                 'semester_id' => $currentSemesterId,
+                'approved_by' => $user->role_id == 1 ? $user->id : null,
+                'approved_at' => $user->role_id == 1 ? now() : null,
+                'notes' => $request->input('notes'),
             ]);
 
-            // Proses setiap order buku
+            // ===== PROSES SETIAP PESANAN BUKU MENGGUNAKAN METODE FIFO =====
             foreach ($books as $bookOrder) {
                 $bookId = $bookOrder['book_id'];
                 $requestedQuantity = $bookOrder['quantity'];
                 $book = Book::find($bookId);
 
-                // Ambil batch stok yang tersedia, diurutkan berdasarkan tanggal masuk (FIFO)
-                $stockBatches = BookStockBatch::where('book_id', $bookId)
-                    ->where('remaining_quantity', '>', 0)
-                    ->orderBy('created_at', 'asc')
+                // Ambil batch stok yang tersedia diurutkan berdasarkan FIFO
+                $stockBatchesQuery = BookStockBatch::where('book_id', $bookId);
+
+                // Filter batch berdasarkan tipe transaksi
+                if ($transactionTypeId == 2) {
+                    $stockBatchesQuery->where('remaining_quantity', '>', 0);
+                } elseif ($transactionTypeId == 3) {
+                    $stockBatchesQuery->where('remaining_return_quantity', '>', 0);
+                } elseif ($transactionTypeId == 4) {
+                    $stockBatchesQuery->where('remaining_mutation_quantity', '>', 0);
+                }
+
+                $stockBatches = $stockBatchesQuery
+                    ->orderBy('created_at', 'asc') // FIFO: First In, First Out
                     ->orderBy('id', 'desc') // Sort sekunder untuk konsistensi
-                    ->lockForUpdate() // Lock baris untuk mencegah race condition
+                    ->lockForUpdate() // Mencegah race condition
                     ->get();
 
                 $remainingQuantity = $requestedQuantity;
 
-                // Proses pengurangan stok dengan metode FIFO (First In, First Out)
+                // ===== PROSES PENGURANGAN STOK MENGGUNAKAN METODE FIFO =====
                 foreach ($stockBatches as $batch) {
-                    // Jika quantity sudah terpenuhi, keluar dari loop
                     if ($remainingQuantity <= 0)
                         break;
 
-                    // Tentukan jumlah yang akan diambil dari batch ini
-                    $quantityToTake = min($remainingQuantity, $batch->remaining_quantity);
+                    // Tentukan jumlah yang akan diambil dari batch ini berdasarkan tipe transaksi
+                    $quantityToTake = 0;
+                    if ($transactionTypeId == 2) {
+                        $quantityToTake = min($remainingQuantity, $batch->remaining_quantity);
+                    } elseif ($transactionTypeId == 3) {
+                        $quantityToTake = min($remainingQuantity, $batch->remaining_return_quantity);
+                    } elseif ($transactionTypeId == 4) {
+                        $quantityToTake = min($remainingQuantity, $batch->remaining_mutation_quantity);
+                    }
 
-                    // Buat record batch item transaksi untuk tracking
+                    // Tentukan harga unit berdasarkan tipe transaksi
+                    $unitPrice = 0;
+                    if ($transactionTypeId == 2) {
+                        // PENGAMBILAN menggunakan harga jual
+                        $unitPrice = $book->price;
+                    } else {
+                        // RETUR/MUTASI menggunakan harga beli dari batch
+                        $unitPrice = $batch->purchase_price;
+                    }
+
+                    $itemTotalPrice = $unitPrice * $quantityToTake;
+                    $totalValue += $itemTotalPrice;
+                    $totalPurchase += $quantityToTake * $batch->purchase_price;
+
+                    // Buat record item transaksi untuk tracking
                     BookTransactionItem::create([
                         'book_transaction_id' => $bookTransaction->id,
                         'book_stock_batch_id' => $batch->id,
                         'book_id' => $bookId,
                         'quantity' => $quantityToTake,
-                        'unit_price' => $book->price,
-                        'total_price' => $book->price * $quantityToTake,
+                        'unit_price' => $unitPrice,
+                        'total_price' => $itemTotalPrice,
                     ]);
 
-                    // Update stok batch (kurangi remaining quantity)
+                    // Update stok batch berdasarkan tipe transaksi
                     $batch->decrement('remaining_quantity', $quantityToTake);
+                    if ($transactionTypeId == 3) {
+                        $batch->decrement('remaining_return_quantity', $quantityToTake);
+                    } elseif ($transactionTypeId == 4) {
+                        $batch->decrement('remaining_mutation_quantity', $quantityToTake);
+                    }
 
-                    // Kurangi quantity yang masih dibutuhkan
                     $remainingQuantity -= $quantityToTake;
                 }
 
-                // Final check - seharusnya tidak terjadi karena sudah pre-validasi
+                // Validasi akhir - seharusnya tidak terjadi karena sudah ada pre-validasi
                 if ($remainingQuantity > 0) {
                     throw new \Exception(
                         "Stok tidak mencukupi untuk buku '{$book->title}' saat pemrosesan. " .
                         "Kekurangan: {$remainingQuantity} unit"
                     );
+                }
+            }
+
+            // ===== UPDATE TOTAL VALUE PADA BOOK TRANSACTION =====
+            $bookTransaction->update(['total_value' => $totalValue]);
+
+            // ===== BUAT TRANSAKSI KEUANGAN JIKA BOOK TRANSACTION DISETUJUI =====
+            if ($bookTransaction->status === 'approved') {
+                if ($bookTransaction->transactionType->name === 'PENGAMBILAN') {
+                    // Buat transaksi belum bayar untuk pengambilan/penjualan customer
+                    Transaction::create([
+                        'book_transaction_id' => $bookTransaction->id,
+                        'user_id' => $user->id,
+                        'total_amount' => $totalValue,
+                        'status' => 'UNPAID',
+                        'remaining_amount' => $totalValue,
+                        'amount_paid' => 0,
+                        'profit_amount' => $totalValue - $totalPurchase,
+                    ]);
+                } elseif (in_array($bookTransaction->transactionType->name, ['RETUR', 'MUTASI'])) {
+                    // Buat transaksi lunas untuk retur/mutasi (tracking internal)
+                    Transaction::create([
+                        'book_transaction_id' => $bookTransaction->id,
+                        'user_id' => $user->id,
+                        'total_amount' => $totalValue,
+                        'status' => 'UNPAID',
+                        'remaining_amount' => $totalValue,
+                        'amount_paid' => 0,
+                        'profit_amount' => 0, // Tidak ada profit untuk retur/mutasi
+                    ]);
                 }
             }
 

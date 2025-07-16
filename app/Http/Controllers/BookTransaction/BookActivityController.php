@@ -99,11 +99,13 @@ class BookActivityController extends Controller
     {
         $user = auth()->user();
         $role = $user->role->name;
+
         $bookTransaction = BookTransaction::with([
             'user:id,name,email',
             'semester:id,name,year,semester_number',
             'transactionType:id,name',
-            'bookTransactionItems.book',
+            'bookTransactionItems.book.category',
+            'bookTransactionItems.book.educationLevel',
             'approvedBy:id,name',
         ])->findOrFail($transactionId);
 
@@ -111,6 +113,31 @@ class BookActivityController extends Controller
         if ($role === 'Sales' && $bookTransaction->user_id !== $user->id) {
             abort(403, 'Anda tidak memiliki akses untuk transaksi ini.');
         }
+
+        // Group items berdasarkan book_id dan aggregate data
+        $groupedItems = $bookTransaction->bookTransactionItems
+            ->groupBy('book_id')
+            ->map(function ($items, $bookId) {
+                $firstItem = $items->first();
+
+                return (object) [
+                    'book_id' => $bookId,
+                    'book' => $firstItem->book,
+                    'quantity' => $items->sum('quantity'),
+                    'unit_price' => $items->avg('unit_price'), // Harga rata-rata jika berbeda
+                    'total_price' => $items->sum('total_price'),
+                    'mutation_percentage' => $items->avg('mutation_percentage') ?? 0,
+                    'return_percentage' => $items->avg('return_percentage') ?? 0,
+                    // Tambahan info untuk debugging/tracking
+                    'batch_count' => $items->count(),
+                    'price_variations' => $items->pluck('unit_price')->unique()->count() > 1,
+                    'individual_items' => $items, // Untuk detail jika diperlukan
+                ];
+            })
+            ->values(); // Reset keys
+
+        // Update relation dengan data yang sudah dikelompokkan
+        $bookTransaction->setRelation('bookTransactionItems', $groupedItems);
 
         return view('book-transaction.book-activity-detail', compact('bookTransaction', 'role', 'user'));
     }
