@@ -206,7 +206,7 @@
                                 class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
                                 <span class="text-sm text-gray-500 dark:text-gray-400">Semester</span>
                                 <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                                    {{ $bookTransaction->semester->name }} {{ $bookTransaction->semester->year }}
+                                    {{ $bookTransaction->semester->name }}
                                 </span>
                             </div>
                         @endif

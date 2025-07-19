@@ -33,6 +33,7 @@ class BookStockController extends Controller
             $currentSemesterId = Semester::where('start_date', '<=', $currentDate)
                 ->where('end_date', '>=', $currentDate)->value('id');
 
+
             if ($currentSemesterId) {
                 $query->withSum([
                     'bookStockBatches as current_semester_return' => function ($query) use ($currentSemesterId) {
@@ -134,7 +135,7 @@ class BookStockController extends Controller
             'books' => 'required|array|min:1',
             'books.*.book_id' => 'required|exists:books,id',
             'books.*.quantity' => 'required|integer|min:1',
-            'transaction_type_id' => 'required|exists:transaction_types,id',
+            'transaction_type_id' => 'nullable|exists:transaction_types,id',
             'notes' => 'nullable|string|max:1000',
         ]);
 
@@ -183,13 +184,17 @@ class BookStockController extends Controller
 
             // ===== INISIALISASI VARIABEL PERHITUNGAN =====
             $totalValue = 0;
-            $totalPurchase = 0; // Perbaiki typo dari $totalPurcase
+            $totalPurchase = 0;
             $totalQuantity = collect($books)->sum('quantity');
 
             // Dapatkan semester aktif saat ini
             $currentSemesterId = Semester::where('start_date', '<=', now())
                 ->where('end_date', '>=', now())
                 ->value('id');
+
+            if (!$currentSemesterId) {
+                throw new \Exception('Semester aktif tidak ditemukan. Pastikan ada semester yang sudah diatur.');
+            }
 
             // ===== BUAT RECORD TRANSAKSI BUKU UTAMA =====
             // Dibuat dengan total_value = 0, akan diupdate setelah memproses semua item

@@ -28,7 +28,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/roles', [App\Http\Controllers\User\RoleController::class, 'index'])->name('user.role');
 
         Route::patch('/book-activity/{transactionId}/rejected', [App\Http\Controllers\BookTransaction\BookTransactionController::class, 'reject'])->name('book.transaction.reject');
-        Route::patch('/book-activity/{transactionId}/approved', [App\Http\Controllers\BookTransaction\BookTransactionController::class, 'approveIn'])->name('book.transaction.approve.in');
+        Route::patch('/book-activity/{transactionId}/approved', [App\Http\Controllers\BookTransaction\BookTransactionController::class, 'approve'])->name('book.transaction.approve.in');
     });
 
     // Route untuk Owner dan Admin

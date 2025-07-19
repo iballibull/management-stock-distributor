@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\BookTransaction;
 
 use App\Models\Book\Book;
-use App\Models\BookStock\BookStockBatch;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Transaction\Transaction;
+use App\Models\BookStock\BookStockBatch;
 use App\Models\BookTransaction\Semester;
 use App\Models\BookTransaction\BookTransaction;
 use App\Models\BookTransaction\BookTransactionItem;
@@ -223,7 +224,7 @@ class BookTransactionController extends Controller
         }
     }
 
-    public function approveIn($transactionId)
+    public function approve($transactionId)
     {
         try {
             DB::beginTransaction();
@@ -239,32 +240,54 @@ class BookTransactionController extends Controller
                 'status' => 'approved',
             ]);
 
-            $bookItems = collect($bookTransaction->bookTransactionItems)->map(function ($item) use ($bookTransaction, $now) {
-                $maxReturn = $item['return_percentage'] / 100 * $item['quantity'];
-                $maxMutation = $item['mutation_percentage'] / 100 * $item['quantity'];
+            if ($bookTransaction->transaction_type_id !== 2) { // Jika bukan PENGAMBILAN
 
-                return [
-                    'book_id' => $item['book_id'],
-                    'semester_id' => $bookTransaction->semester_id,
-                    'purchase_price' => $item['unit_price'],
-                    'quantity' => $item['quantity'],
-                    'remaining_quantity' => $item['quantity'],
-                    'mutation_percentage' => $item['mutation_percentage'],
-                    'return_percentage' => $item['return_percentage'],
-                    'max_mutation_quantity' => $maxMutation,
-                    'max_return_quantity' => $maxReturn,
-                    'remaining_return_quantity' => $maxReturn,
-                    'remaining_mutation_quantity' => $maxReturn,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]
-                ;
-            });
+                $bookItems = collect($bookTransaction->bookTransactionItems)->map(function ($item) use ($bookTransaction, $now) {
+                    $maxReturn = $item['return_percentage'] / 100 * $item['quantity'];
+                    $maxMutation = $item['mutation_percentage'] / 100 * $item['quantity'];
 
-            BookStockBatch::insert($bookItems->toArray());
+                    return [
+                        'book_id' => $item['book_id'],
+                        'semester_id' => $bookTransaction->semester_id,
+                        'purchase_price' => $item['unit_price'],
+                        'quantity' => $item['quantity'],
+                        'remaining_quantity' => $item['quantity'],
+                        'mutation_percentage' => $item['mutation_percentage'],
+                        'return_percentage' => $item['return_percentage'],
+                        'max_mutation_quantity' => $maxMutation,
+                        'max_return_quantity' => $maxReturn,
+                        'remaining_return_quantity' => $maxReturn,
+                        'remaining_mutation_quantity' => $maxReturn,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]
+                    ;
+                });
 
-            DB::commit();
-            return back()->with('success', 'Transaksi berhasil di setujui dan stok buku berhasil ditambahkan.');
+                BookStockBatch::insert($bookItems->toArray());
+
+                DB::commit();
+                return back()->with('success', 'Transaksi berhasil di setujui dan stok buku berhasil ditambahkan.');
+            } else {
+                $totalPurchase = BookTransactionItem::where('book_transaction_id', $bookTransaction->id)
+                    ->sum(DB::raw('quantity * unit_price'));
+
+                $totalValue = $bookTransaction->total_value;
+
+                Transaction::create([
+                    'book_transaction_id' => $bookTransaction->id,
+                    'user_id' => $bookTransaction->user_id,
+                    'total_amount' => $totalValue,
+                    'status' => 'UNPAID',
+                    'remaining_amount' => $totalValue,
+                    'amount_paid' => 0,
+                    'profit_amount' => $totalValue - $totalPurchase,
+                ]);
+
+
+                DB::commit();
+                return back()->with('success', 'Transaksi berhasil di setujui.');
+            }
         } catch (\Throwable $th) {
             DB::rollBack();
             return back()->with('failed', 'Gagal menyetujui: ' . $th->getMessage());
