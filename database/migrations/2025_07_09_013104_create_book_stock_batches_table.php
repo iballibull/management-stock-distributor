@@ -17,12 +17,9 @@ return new class extends Migration {
             $table->decimal('purchase_price', 15, 2);
             $table->unsignedInteger('quantity');
             $table->unsignedInteger('remaining_quantity');
-            $table->unsignedInteger('mutation_percentage');
             $table->unsignedInteger('return_percentage');
             $table->unsignedInteger('max_return_quantity');
-            $table->unsignedInteger('max_mutation_quantity');
             $table->unsignedInteger('remaining_return_quantity');
-            $table->unsignedInteger('remaining_mutation_quantity');
             $table->timestamps();
 
             $table->foreign('book_id')->references('id')->on('books')->onUpdate('cascade')->onDelete('restrict');

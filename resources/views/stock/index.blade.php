@@ -204,25 +204,17 @@
                     @foreach ($books as $book)
                         <!-- Secondary Info - Only show if there are values -->
                         @php
-                            $hasReturn =
-                                ($book->remaining_return_quantity ??
-                                    ($book->book_stock_batches_sum_remaining_return_quantity ?? 0)) >
-                                0;
-                            $hasMutation =
-                                ($book->current_semester_mutation_sum_remaining_mutation_quantity ??
-                                    ($book->book_stock_batches_sum_remaining_mutation_quantity ?? 0)) >
-                                0;
-                            $returnStock =
-                                $book->current_semester_return_sum_remaining_return_quantity ??
-                                ($book->book_stock_batches_sum_remaining_return_quantity ?? 0);
-                            $mutationStock =
-                                $book->current_semester_mutation_sum_remaining_mutation_quantity ??
-                                ($book->book_stock_batches_sum_remaining_mutation_quantity ?? 0);
+                            $hasReturn = $book->current_semester_return ?? 0;
+                            $hasMutation = $book->current_semester_mutation ?? 0;
+                            $returnStock = $book->current_semester_return ?? 0;
+                            $mutationStock = $book->current_semester_mutation ?? 0;
+
+                            // Stok yang tersedia untuk setiap jenis transaksi
+                            $mainStock = $book->book_stock_batches_sum_remaining_quantity ?? 0;
                         @endphp
                         <div class="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-lg hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600 book-card relative"
                             data-book-id="{{ $book->id }}" data-book-price="{{ $book->price }}"
-                            data-book-title="{{ $book->title }}"
-                            data-book-stock="{{ $book->book_stock_batches_sum_remaining_quantity ?? 0 }}"
+                            data-book-title="{{ $book->title }}" data-book-stock="{{ $mainStock }}"
                             data-book-return-stock="{{ $returnStock }}"
                             data-book-mutation-stock="{{ $mutationStock }}">
 
@@ -472,10 +464,6 @@
                                                     id="returnPercentageHeader" style="display: none;">
                                                     Retur %
                                                 </th>
-                                                <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
-                                                    id="mutationPercentageHeader" style="display: none;">
-                                                    Mutasi %
-                                                </th>
                                             @endif
                                             <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300"
                                                 id="subtotalHeader">
@@ -692,7 +680,6 @@
                     const data = localStorage.getItem(STORAGE_KEY);
                     return data ? JSON.parse(data) : [];
                 } catch (e) {
-                    console.error('Error memuat pilihan:', e);
                     return [];
                 }
             }
@@ -703,6 +690,45 @@
             function clearStoredSelection() {
                 localStorage.removeItem(STORAGE_KEY);
                 localStorage.removeItem(STORAGE_EXPIRY);
+            }
+
+            /**
+             * Mengambil data buku terbaru dari DOM
+             * @param {string} bookId - ID buku
+             * @returns {Object|null} Data buku terbaru atau null jika tidak ditemukan
+             */
+            function getLatestBookData(bookId) {
+                const bookCard = document.querySelector(`.book-card[data-book-id="${bookId}"]`);
+                if (!bookCard) return null;
+
+                return {
+                    id: bookId,
+                    title: bookCard.dataset.bookTitle,
+                    price: parseInt(bookCard.dataset.bookPrice),
+                    stock: parseInt(bookCard.dataset.bookStock),
+                    return_stock: parseInt(bookCard.dataset.bookReturnStock || 0),
+                    mutation_stock: parseInt(bookCard.dataset.bookMutationStock || 0),
+                    quantity: selectedBooks.has(bookId) ? selectedBooks.get(bookId).quantity : 1
+                };
+            }
+
+            /**
+             * Memperbarui data buku yang dipilih dengan data terbaru dari DOM
+             */
+            function refreshSelectedBooksData() {
+                const updatedBooks = new Map();
+
+                selectedBooks.forEach((book, bookId) => {
+                    const latestData = getLatestBookData(bookId);
+                    if (latestData) {
+                        // Pertahankan quantity yang sudah diset user
+                        latestData.quantity = book.quantity;
+                        updatedBooks.set(bookId, latestData);
+                    }
+                });
+
+                selectedBooks = updatedBooks;
+                saveSelection();
             }
 
             /**
@@ -736,18 +762,14 @@
                     const bookId = checkbox.dataset.bookId;
 
                     if (checkbox.checked) {
-                        // Tambah atau perbarui pilihan buku
-                        if (!selectedBooks.has(bookId)) {
-                            const bookData = {
-                                id: bookId,
-                                title: bookCard.dataset.bookTitle,
-                                price: parseInt(bookCard.dataset.bookPrice),
-                                stock: parseInt(bookCard.dataset.bookStock),
-                                return_stock: parseInt(bookCard.dataset.bookReturnStock || 0),
-                                mutation_stock: parseInt(bookCard.dataset.bookMutationStock || 0),
-                                quantity: 1 // Kuantitas default
-                            };
-                            selectedBooks.set(bookId, bookData);
+                        // Tambah atau perbarui pilihan buku dengan data terbaru
+                        const latestData = getLatestBookData(bookId);
+                        if (latestData) {
+                            // Jika buku sudah ada dalam pilihan, pertahankan quantity-nya
+                            if (selectedBooks.has(bookId)) {
+                                latestData.quantity = selectedBooks.get(bookId).quantity;
+                            }
+                            selectedBooks.set(bookId, latestData);
                         }
                         bookCard.classList.add('selected');
                     } else {
@@ -776,16 +798,16 @@
                 // Perbarui teks tombol
                 if (count === 1) {
                     orderBtn.innerHTML = `<svg class="w-4 h-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                </svg>Pesan 1 Item`;
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+    </svg>Pesan 1 Item`;
                 } else if (count > 1) {
                     orderBtn.innerHTML = `<svg class="w-4 h-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                </svg>Pesan ${count} Item`;
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+    </svg>Pesan ${count} Item`;
                 } else {
                     orderBtn.innerHTML = `<svg class="w-4 h-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                </svg>Pesan Sekarang`;
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+    </svg>Pesan Sekarang`;
                 }
 
                 // Perbarui checkbox pilih semua
@@ -843,8 +865,9 @@
                     if (mutationHeader) mutationHeader.style.display = 'table-cell';
                 }
 
-                // Refresh konten modal
+                // Refresh konten modal dengan data terbaru
                 if (selectedBooks.size > 0) {
+                    refreshSelectedBooksData();
                     showOrderModal();
                 }
             }
@@ -860,11 +883,12 @@
                     case '2': // PENGAMBILAN
                         return book.stock;
                     case '3': // RETUR
-                        // Untuk retur, periksa stok retur yang tersedia
+                        // Untuk retur, gunakan stok retur yang tersedia
                         return book.return_stock || 0;
                     case '4': // MUTASI  
-                        // Untuk mutasi, periksa stok mutasi yang tersedia
-                        return book.mutation_stock || 0;
+                        // Untuk mutasi, gunakan stok biasa (sama seperti pengambilan)
+                        // karena mutasi adalah pemindahan stok dari satu lokasi ke lokasi lain
+                        return book.mutation_stock;
                     default:
                         return book.stock;
                 }
@@ -875,6 +899,9 @@
              */
             function showOrderModal() {
                 if (selectedBooks.size === 0) return;
+
+                // Refresh data buku dengan stok terbaru sebelum menampilkan modal
+                refreshSelectedBooksData();
 
                 const tableBody = document.getElementById('selectedBooksTable');
                 const orderTotal = document.getElementById('orderTotal');
@@ -899,91 +926,96 @@
 
                     // Buat info stok berdasarkan jenis transaksi
                     let stockInfo = '';
-                    if (transactionType === '2') {
+                    if (transactionType === '2') { // PENGAMBILAN
                         stockInfo = `
-                        <div class="text-sm font-medium text-green-600">Tersedia: ${book.stock}</div>
-                    `;
-                    } else if (transactionType === '3') {
+    <div class="text-sm font-medium text-green-600">Tersedia: ${book.stock}</div>
+`;
+                    } else if (transactionType === '3') { // RETUR
                         stockInfo = `
-                        <div class="text-xs text-gray-500">Total: ${book.stock}</div>
-                        <div class="text-sm font-medium text-blue-600">Retur: ${book.return_stock || 0}</div>
-                    `;
-                    } else if (transactionType === '4') {
+    <div class="text-xs text-gray-500">Total: ${book.stock}</div>
+    <div class="text-sm font-medium text-blue-600">Retur: ${book.return_stock > book.stock ? book.stock : book.return_stock || 0}</div>
+`;
+                    } else if (transactionType === '4') { // MUTASI
                         stockInfo = `
-                        <div class="text-xs text-gray-500">Total: ${book.stock}</div>
-                        <div class="text-sm font-medium text-yellow-600">Mutasi: ${book.mutation_stock || 0}</div>
-                    `;
+    <div class="text-xs text-gray-500">Total: ${book.stock}</div>
+    <div class="text-sm font-medium text-purple-600">Mutasi: ${book.mutation_stock || 0}</div>
+`;
+                    }
+
+                    // Validasi quantity terhadap stok terbaru
+                    if (book.quantity > maxQuantity) {
+                        book.quantity = Math.max(1, maxQuantity);
                     }
 
                     // Buat HTML baris
                     let rowHTML = `
-                    <td class="px-3 py-2">
-                        <input type="hidden" name="books[${book.id}][book_id]" value="${book.id}">
-                        <input type="hidden" name="books[${book.id}][quantity]" value="${book.quantity}">
-                        <div class="font-medium text-gray-900 dark:text-white">${book.title}</div>
-                        <div class="text-gray-500 text-xs">Harga: Rp ${book.price.toLocaleString('id-ID')}</div>
-                    </td>
-                    <td class="px-3 py-2 text-center">
-                        ${stockInfo}
-                    </td>
-                    <td class="px-3 py-2 text-center">
-                        <input type="number" 
-                               class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
-                               value="${book.quantity}" 
-                               min="1" 
-                               max="${maxQuantity}"
-                               onchange="updateBookQuantity('${book.id}', this.value)"
-                               ${maxQuantity === 0 ? 'disabled' : ''}>
-                        ${maxQuantity === 0 ? '<div class="text-xs text-red-500 mt-1">Tidak tersedia</div>' : ''}
-                        ${maxQuantity > 0 ? `<div class="text-xs text-gray-500 mt-1">Maks: ${maxQuantity}</div>` : ''}
-                    </td>
-                `;
+                <td class="px-3 py-2">
+                    <input type="hidden" name="books[${book.id}][book_id]" value="${book.id}">
+                    <input type="hidden" name="books[${book.id}][quantity]" value="${book.quantity}">
+                    <div class="font-medium text-gray-900 dark:text-white">${book.title}</div>
+                    <div class="text-gray-500 text-xs">Harga: Rp ${book.price.toLocaleString('id-ID')}</div>
+                </td>
+                <td class="px-3 py-2 text-center">
+                    ${stockInfo}
+                </td>
+                <td class="px-3 py-2 text-center">
+                    <input type="number" 
+                           class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
+                           value="${book.quantity}" 
+                           min="1" 
+                           max="${maxQuantity}"
+                           onchange="updateBookQuantity('${book.id}', this.value)"
+                           ${maxQuantity === 0 ? 'disabled' : ''}>
+                    ${maxQuantity === 0 ? '<div class="text-xs text-red-500 mt-1">Tidak tersedia</div>' : ''}
+                    ${maxQuantity > 0 ? `<div class="text-xs text-gray-500 mt-1">Maks: ${maxQuantity}</div>` : ''}
+                </td>
+            `;
 
                     // Tambahkan kolom persentase untuk Owner dengan transaksi KEDATANGAN
                     if ('{{ $role }}' === 'Owner' && transactionType === '1') {
                         rowHTML += `
-                        <td class="px-3 py-2 text-center" id="returnPercentageCell-${book.id}">
-                            <input type="number" 
-                                   name="books[${book.id}][return_percentage]"
-                                   class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
-                                   value="${book.return_percentage || 0}" 
-                                   min="0" 
-                                   max="100"
-                                   onchange="validatePercentages('${book.id}')">
-                        </td>
-                        <td class="px-3 py-2 text-center" id="mutationPercentageCell-${book.id}">
-                            <input type="number" 
-                                   name="books[${book.id}][mutation_percentage]"
-                                   class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
-                                   value="${book.mutation_percentage || 0}" 
-                                   min="0" 
-                                   max="100"
-                                   onchange="validatePercentages('${book.id}')">
-                        </td>
-                    `;
+                    <td class="px-3 py-2 text-center" id="returnPercentageCell-${book.id}">
+                        <input type="number" 
+                               name="books[${book.id}][return_percentage]"
+                               class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
+                               value="${book.return_percentage || 0}" 
+                               min="0" 
+                               max="100"
+                               onchange="validatePercentages('${book.id}')">
+                    </td>
+                    <td class="px-3 py-2 text-center" id="mutationPercentageCell-${book.id}">
+                        <input type="number" 
+                               name="books[${book.id}][mutation_percentage]"
+                               class="w-16 p-1 text-center border rounded text-sm focus:ring-2 focus:ring-blue-500" 
+                               value="${book.mutation_percentage || 0}" 
+                               min="0" 
+                               max="100"
+                               onchange="validatePercentages('${book.id}')">
+                    </td>
+                `;
                     }
 
                     // Hanya tambahkan kolom subtotal untuk PENGAMBILAN
                     if (transactionType === '2') {
                         rowHTML += `
-                        <td class="px-3 py-2 text-right font-medium text-gray-900 dark:text-white" id="subtotal-${book.id}">
-                            Rp ${subtotal.toLocaleString('id-ID')}
-                        </td>
-                    `;
+                    <td class="px-3 py-2 text-right font-medium text-gray-900 dark:text-white" id="subtotal-${book.id}">
+                        Rp ${subtotal.toLocaleString('id-ID')}
+                    </td>
+                `;
                     }
 
                     rowHTML += `
-                    <td class="px-3 py-2 text-center">
-                        <button type="button" 
-                                onclick="removeBookFromOrder('${book.id}')"
-                                class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
-                                title="Hapus item">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                        </button>
-                    </td>
-                `;
+                <td class="px-3 py-2 text-center">
+                    <button type="button" 
+                            onclick="removeBookFromOrder('${book.id}')"
+                            class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
+                            title="Hapus item">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </td>
+            `;
 
                     row.innerHTML = rowHTML;
                     tableBody.appendChild(row);
@@ -1016,6 +1048,9 @@
                         subtotalHeader.style.display = 'none';
                     }
                 }
+
+                // Simpan data yang sudah diperbarui
+                saveSelection();
             }
 
             /**
@@ -1047,11 +1082,6 @@
 
                         // Set ke nilai maksimum yang diizinkan
                         quantityInput.value = maxAllowed;
-
-                        // Tampilkan pesan peringatan
-                        console.warn(
-                            `${stockType} tidak mencukupi untuk ${book.title}. Tersedia: ${availableStock}, Diminta: ${newQuantity}`
-                        );
                         return;
                     }
 
@@ -1192,7 +1222,6 @@
                 }
             }
 
-
             /**
              * Menangani klik pada kartu buku untuk toggle pilihan
              * @param {Event} event - Event klik
@@ -1274,6 +1303,9 @@
             document.getElementById('orderForm').addEventListener('submit', function(e) {
                 const transactionType = document.querySelector('input[name="transaction_type_id"]:checked')?.value;
 
+                // Refresh data sebelum validasi
+                refreshSelectedBooksData();
+
                 // Validasi ketersediaan stok untuk semua tipe transaksi
                 let hasStockError = false;
                 let errorMessages = [];
@@ -1297,7 +1329,6 @@
 
                 if (hasStockError) {
                     e.preventDefault();
-                    alert('Stok tidak mencukupi:\n' + errorMessages.join('\n'));
                     return false;
                 }
 
@@ -1324,12 +1355,10 @@
 
                     if (hasPercentageError) {
                         e.preventDefault();
-                        alert('Total persentase retur dan mutasi tidak boleh lebih dari 100%');
                         return false;
                     }
                 }
             });
-
 
             // Inisialisasi saat halaman dimuat
             document.addEventListener('DOMContentLoaded', function() {

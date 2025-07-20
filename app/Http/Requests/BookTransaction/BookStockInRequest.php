@@ -46,12 +46,6 @@ class BookStockInRequest extends FormRequest
                 'required',
                 'integer',
             ],
-            'books.*.mutation_percentage' => [
-                'required',
-                'numeric',
-                'min:0',
-                'max:100'
-            ],
             'books.*.return_percentage' => [
                 'required',
                 'numeric',
@@ -68,7 +62,6 @@ class BookStockInRequest extends FormRequest
             'books.*.book_id' => 'buku',
             'books.*.quantity' => 'jumlah',
             'books.*.unit_price' => 'harga beli',
-            'books.*.mutation_percentage' => 'persentase mutasi',
             'books.*.return_percentage' => 'persentase retur',
         ];
     }

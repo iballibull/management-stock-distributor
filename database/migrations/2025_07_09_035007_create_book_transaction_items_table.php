@@ -18,7 +18,6 @@ return new class extends Migration {
             $table->integer('quantity');
             $table->decimal('unit_price', 15, 2);
             $table->decimal('total_price', 15, 2);
-            $table->decimal('mutation_percentage', 5, 2)->default(0);
             $table->decimal('return_percentage', 5, 2)->default(0);
             $table->timestamps();
 

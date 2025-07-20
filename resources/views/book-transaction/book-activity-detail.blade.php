@@ -250,8 +250,7 @@
                                     <th class="px-6 py-3 text-center">Semester</th>
                                     <th class="px-6 py-3 text-center">Qty</th>
                                     @if ($bookTransaction->transactionType->name === 'KEDATANGAN')
-                                        <th class="px-6 py-3 text-center">Persentase Mutasi</th>
-                                        <th class="px-6 py-3 text-center">Persentase Return</th>
+                                        <th class="px-6 py-3 text-center">Persentase Retur</th>
                                         <th class="px-6 py-3 text-center">Harga Beli</th>
                                     @else
                                         <th class="px-6 py-3 text-center">Harga</th>
@@ -265,7 +264,7 @@
                                         {{-- Number --}}
                                         <td class="px-6 py-4 text-center font-medium text-gray-900 dark:text-white">
                                             {{ $key + 1 }}
-                                            @if (isset($item->batch_count) && $item->batch_count > 1)
+                                            @if (isset($item->batch_count) && $item->batch_count > 1 && ($user->role_id === 1 || $user->role_id === 2))
                                                 <div class="text-xs text-blue-500 mt-1">
                                                     {{ $item->batch_count }} batch
                                                 </div>
@@ -310,7 +309,7 @@
                                         {{-- Quantity --}}
                                         <td class="px-6 py-4 text-center font-semibold">
                                             {{ number_format($item->quantity) }}
-                                            @if (isset($item->batch_count) && $item->batch_count > 1)
+                                            @if (isset($item->batch_count) && $item->batch_count > 1 && ($user->role_id === 1 || $user->role_id === 2))
                                                 <button type="button"
                                                     class="ml-2 text-blue-600 hover:text-blue-800 text-xs"
                                                     onclick="toggleBatchDetails('{{ $item->book_id ?? $item->book->id }}')">
@@ -326,9 +325,6 @@
 
                                         {{-- Percentages for KEDATANGAN --}}
                                         @if ($bookTransaction->transactionType->name === 'KEDATANGAN')
-                                            <td class="px-6 py-4 text-center">
-                                                {{ number_format($item->mutation_percentage ?? 0, 1) }}%
-                                            </td>
                                             <td class="px-6 py-4 text-center">
                                                 {{ number_format($item->return_percentage ?? 0, 1) }}%
                                             </td>
@@ -378,8 +374,6 @@
                                                                         {{ number_format($batch->total_price, 0, ',', '.') }}
                                                                     </div>
                                                                     @if ($bookTransaction->transactionType->name === 'KEDATANGAN')
-                                                                        <div><strong>Mutasi:</strong>
-                                                                            {{ $batch->mutation_percentage ?? 0 }}%</div>
                                                                         <div><strong>Retur:</strong>
                                                                             {{ $batch->return_percentage ?? 0 }}%</div>
                                                                     @endif

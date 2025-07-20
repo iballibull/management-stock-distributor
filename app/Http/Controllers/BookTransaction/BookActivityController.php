@@ -126,7 +126,6 @@ class BookActivityController extends Controller
                     'quantity' => $items->sum('quantity'),
                     'unit_price' => $items->avg('unit_price'), // Harga rata-rata jika berbeda
                     'total_price' => $items->sum('total_price'),
-                    'mutation_percentage' => $items->avg('mutation_percentage') ?? 0,
                     'return_percentage' => $items->avg('return_percentage') ?? 0,
                     // Tambahan info untuk debugging/tracking
                     'batch_count' => $items->count(),

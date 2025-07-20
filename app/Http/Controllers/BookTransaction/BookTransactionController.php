@@ -63,7 +63,6 @@ class BookTransactionController extends Controller
                 $quantity = $book['quantity'];
                 $unitPrice = $book['unit_price'];
                 $totalPrice = $quantity * $unitPrice;
-                $mutationPercentage = $book['mutation_percentage'];
                 $returnPercentage = $book['return_percentage'];
 
                 $bookItems[] = [
@@ -73,7 +72,6 @@ class BookTransactionController extends Controller
                     'quantity' => $quantity,
                     'unit_price' => $unitPrice,
                     'total_price' => $totalPrice,
-                    'mutation_percentage' => $mutationPercentage,
                     'return_percentage' => $returnPercentage,
                     'created_at' => $now,
                     'updated_at' => $now,
@@ -85,7 +83,6 @@ class BookTransactionController extends Controller
             if ($bookTransaction->status === 'approved') {
                 $bookItems = collect($bookItems)->map(function ($item) use ($semesterId, $now) {
                     $maxReturn = $item['return_percentage'] / 100 * $item['quantity'];
-                    $maxMutation = $item['mutation_percentage'] / 100 * $item['quantity'];
 
                     return [
                         'book_id' => $item['book_id'],
@@ -93,12 +90,9 @@ class BookTransactionController extends Controller
                         'purchase_price' => $item['unit_price'],
                         'quantity' => $item['quantity'],
                         'remaining_quantity' => $item['quantity'],
-                        'mutation_percentage' => $item['mutation_percentage'],
                         'return_percentage' => $item['return_percentage'],
-                        'max_mutation_quantity' => $maxMutation,
                         'max_return_quantity' => $maxReturn,
                         'remaining_return_quantity' => $maxReturn,
-                        'remaining_mutation_quantity' => $maxReturn,
                         'created_at' => $now,
                         'updated_at' => $now,
                     ];
@@ -244,7 +238,6 @@ class BookTransactionController extends Controller
 
                 $bookItems = collect($bookTransaction->bookTransactionItems)->map(function ($item) use ($bookTransaction, $now) {
                     $maxReturn = $item['return_percentage'] / 100 * $item['quantity'];
-                    $maxMutation = $item['mutation_percentage'] / 100 * $item['quantity'];
 
                     return [
                         'book_id' => $item['book_id'],
@@ -252,12 +245,9 @@ class BookTransactionController extends Controller
                         'purchase_price' => $item['unit_price'],
                         'quantity' => $item['quantity'],
                         'remaining_quantity' => $item['quantity'],
-                        'mutation_percentage' => $item['mutation_percentage'],
                         'return_percentage' => $item['return_percentage'],
-                        'max_mutation_quantity' => $maxMutation,
                         'max_return_quantity' => $maxReturn,
                         'remaining_return_quantity' => $maxReturn,
-                        'remaining_mutation_quantity' => $maxReturn,
                         'created_at' => $now,
                         'updated_at' => $now,
                     ]

@@ -25,26 +25,25 @@ class BookStockController extends Controller
             ->withSum('bookStockBatches', 'remaining_quantity');
 
         if ($role !== 'Sales') {
-            $query->withSum('bookStockBatches', 'remaining_return_quantity')
-                ->withSum('bookStockBatches', 'remaining_mutation_quantity');
-
             // Get current semester based on academic calendar
-            $currentDate = now()->subMonth();
+            $currentDate = now();
             $currentSemesterId = Semester::where('start_date', '<=', $currentDate)
-                ->where('end_date', '>=', $currentDate)->value('id');
-
+                ->where('start_date', '<=', $currentDate)
+                ->where('end_date', '>=', $currentDate)
+                ->value('id');
 
             if ($currentSemesterId) {
                 $query->withSum([
                     'bookStockBatches as current_semester_return' => function ($query) use ($currentSemesterId) {
                         $query->where('semester_id', $currentSemesterId);
                     }
-                ], 'remaining_return_quantity')
-                    ->withSum([
-                        'bookStockBatches as current_semester_mutation' => function ($query) use ($currentSemesterId) {
-                            $query->where('semester_id', $currentSemesterId);
-                        }
-                    ], 'remaining_mutation_quantity');
+                ], 'remaining_return_quantity');
+
+                $query->withSum([
+                    'bookStockBatches as current_semester_mutation' => function ($query) use ($currentSemesterId) {
+                        $query->where('semester_id', $currentSemesterId);
+                    }
+                ], 'remaining_quantity');
             }
         }
 
@@ -145,10 +144,21 @@ class BookStockController extends Controller
         // Tentukan tipe transaksi - Sales hanya bisa melakukan PENGAMBILAN (tipe 2)
         $transactionTypeId = $user->role_id == 3 ? 2 : $request->input('transaction_type_id');
 
-        // Mulai transaksi database untuk atomicity
+        // Mulai transaksi database
         DB::beginTransaction();
 
+
         try {
+            $now = now();
+            // Dapatkan semester aktif saat ini
+            $currentSemesterId = Semester::where('start_date', '<=', $now)
+                ->where('end_date', '>=', $now)
+                ->value('id');
+
+            if (!$currentSemesterId) {
+                throw new \Exception('Semester aktif tidak ditemukan. Pastikan ada semester yang sudah diatur.');
+            }
+
             // ===== PRE-VALIDASI: CEK KETERSEDIAAN STOK =====
             // Validasi ketersediaan stok untuk setiap buku berdasarkan tipe transaksi
             foreach ($books as $bookOrder) {
@@ -160,9 +170,11 @@ class BookStockController extends Controller
                 if ($transactionTypeId == 2) {
                     $availableStock = BookStockBatch::where('book_id', $bookId)->sum('remaining_quantity');
                 } elseif ($transactionTypeId == 3) {
-                    $availableStock = BookStockBatch::where('book_id', $bookId)->sum('remaining_return_quantity');
+                    $availableStock = BookStockBatch::where('book_id', $bookId)
+                        ->where('semester_id', $currentSemesterId)->sum('remaining_return_quantity');
                 } elseif ($transactionTypeId == 4) {
-                    $availableStock = BookStockBatch::where('book_id', $bookId)->sum('remaining_mutation_quantity');
+                    $availableStock = BookStockBatch::where('book_id', $bookId)
+                        ->where('semester_id', $currentSemesterId)->sum('remaining_quantity');
                 }
 
                 // Jika stok tidak mencukupi, lempar exception
@@ -176,7 +188,7 @@ class BookStockController extends Controller
                     }
 
                     throw new \Exception(
-                        "{$stockType} tidak mencukupi untuk buku '{$book->title}'. " .
+                        "{$stockType} tidak mencukupi untuk buku {$book->title}. " .
                         "Tersedia: {$availableStock}, Diminta: {$requestedQuantity}"
                     );
                 }
@@ -186,15 +198,6 @@ class BookStockController extends Controller
             $totalValue = 0;
             $totalPurchase = 0;
             $totalQuantity = collect($books)->sum('quantity');
-
-            // Dapatkan semester aktif saat ini
-            $currentSemesterId = Semester::where('start_date', '<=', now())
-                ->where('end_date', '>=', now())
-                ->value('id');
-
-            if (!$currentSemesterId) {
-                throw new \Exception('Semester aktif tidak ditemukan. Pastikan ada semester yang sudah diatur.');
-            }
 
             // ===== BUAT RECORD TRANSAKSI BUKU UTAMA =====
             // Dibuat dengan total_value = 0, akan diupdate setelah memproses semua item
@@ -223,9 +226,12 @@ class BookStockController extends Controller
                 if ($transactionTypeId == 2) {
                     $stockBatchesQuery->where('remaining_quantity', '>', 0);
                 } elseif ($transactionTypeId == 3) {
-                    $stockBatchesQuery->where('remaining_return_quantity', '>', 0);
+                    $stockBatchesQuery
+                        ->where('semester_id', $currentSemesterId)
+                        ->where('remaining_return_quantity', '>', 0);
                 } elseif ($transactionTypeId == 4) {
-                    $stockBatchesQuery->where('remaining_mutation_quantity', '>', 0);
+                    $stockBatchesQuery->where('remaining_quantity', '>', 0)
+                        ->where('semester_id', $currentSemesterId);
                 }
 
                 $stockBatches = $stockBatchesQuery
@@ -236,63 +242,104 @@ class BookStockController extends Controller
 
                 $remainingQuantity = $requestedQuantity;
 
-                // ===== PROSES PENGURANGAN STOK MENGGUNAKAN METODE FIFO =====
-                foreach ($stockBatches as $batch) {
-                    if ($remainingQuantity <= 0)
-                        break;
+                if ($transactionTypeId == 3) {
+                    // === HANDLE RETUR DULUAN, KHUSUS ===
 
-                    // Tentukan jumlah yang akan diambil dari batch ini berdasarkan tipe transaksi
-                    $quantityToTake = 0;
-                    if ($transactionTypeId == 2) {
+                    $remainingQuantity = $requestedQuantity;
+                    $availableReturnBefore = 0;
+
+                    foreach ($stockBatches as $batch) {
+                        if ($remainingQuantity <= 0)
+                            break;
+
+                        $returnableQuantity = $batch->remaining_return_quantity + $availableReturnBefore;
+
+                        $maxReturnable = min($returnableQuantity, $batch->remaining_quantity);
+                        $quantityToTake = min($remainingQuantity, $maxReturnable);
+
+                        $itemTotalPrice = $batch->purchase_price * $quantityToTake;
+                        $totalValue += $itemTotalPrice;
+                        $totalPurchase += $quantityToTake * $batch->purchase_price;
+
+                        if ($maxReturnable == $batch->remaining_quantity) {
+                            $availableReturnBefore += $returnableQuantity - $batch->remaining_quantity;
+                            $batch->decrement('remaining_return_quantity', $quantityToTake + $availableReturnBefore);
+
+                            if ($batch->remaining_quantity <= 0) {
+                                continue;
+                            }
+                            $batch->decrement('remaining_quantity', $quantityToTake);
+                        } else {
+                            $batch->decrement('remaining_return_quantity', $quantityToTake - $availableReturnBefore);
+                            $batch->decrement('remaining_quantity', $quantityToTake);
+                        }
+
+                        BookTransactionItem::create([
+                            'book_transaction_id' => $bookTransaction->id,
+                            'book_stock_batch_id' => $batch->id,
+                            'book_id' => $bookId,
+                            'quantity' => $quantityToTake,
+                            'unit_price' => $batch->purchase_price,
+                            'total_price' => $itemTotalPrice,
+                        ]);
+
+
+
+                        $remainingQuantity -= $quantityToTake;
+                    }
+
+                    if ($remainingQuantity > 0) {
+                        throw new \Exception(
+                            "Stok retur tidak mencukupi untuk buku {$book->title}. Kekurangan: {$remainingQuantity} unit"
+                        );
+                    }
+
+                } else {
+                    // === HANDLE PENGAMBILAN / MUTASI (Tipe 2 dan 4) ===
+                    $stockBatches = BookStockBatch::where('book_id', $bookId)
+                        ->where('remaining_quantity', '>', 0)
+                        ->when($transactionTypeId == 4, function ($q) use ($currentSemesterId) {
+                            return $q->where('semester_id', $currentSemesterId);
+                        })
+                        ->orderBy('created_at', 'asc')
+                        ->orderBy('id', 'asc')
+                        ->lockForUpdate()
+                        ->get();
+
+                    $remainingQuantity = $requestedQuantity;
+
+                    foreach ($stockBatches as $batch) {
+                        if ($remainingQuantity <= 0)
+                            break;
+
                         $quantityToTake = min($remainingQuantity, $batch->remaining_quantity);
-                    } elseif ($transactionTypeId == 3) {
-                        $quantityToTake = min($remainingQuantity, $batch->remaining_return_quantity);
-                    } elseif ($transactionTypeId == 4) {
-                        $quantityToTake = min($remainingQuantity, $batch->remaining_mutation_quantity);
+
+                        $unitPrice = $transactionTypeId == 2 ? $book->price : $batch->purchase_price;
+                        $itemTotalPrice = $unitPrice * $quantityToTake;
+                        $totalValue += $itemTotalPrice;
+                        $totalPurchase += $quantityToTake * $batch->purchase_price;
+
+                        BookTransactionItem::create([
+                            'book_transaction_id' => $bookTransaction->id,
+                            'book_stock_batch_id' => $batch->id,
+                            'book_id' => $bookId,
+                            'quantity' => $quantityToTake,
+                            'unit_price' => $unitPrice,
+                            'total_price' => $itemTotalPrice,
+                        ]);
+
+                        $batch->decrement('remaining_quantity', $quantityToTake);
+
+                        $remainingQuantity -= $quantityToTake;
                     }
 
-                    // Tentukan harga unit berdasarkan tipe transaksi
-                    $unitPrice = 0;
-                    if ($transactionTypeId == 2) {
-                        // PENGAMBILAN menggunakan harga jual
-                        $unitPrice = $book->price;
-                    } else {
-                        // RETUR/MUTASI menggunakan harga beli dari batch
-                        $unitPrice = $batch->purchase_price;
+                    if ($remainingQuantity > 0) {
+                        throw new \Exception(
+                            "Stok tidak mencukupi untuk buku {$book->title}. Kekurangan: {$remainingQuantity} unit"
+                        );
                     }
-
-                    $itemTotalPrice = $unitPrice * $quantityToTake;
-                    $totalValue += $itemTotalPrice;
-                    $totalPurchase += $quantityToTake * $batch->purchase_price;
-
-                    // Buat record item transaksi untuk tracking
-                    BookTransactionItem::create([
-                        'book_transaction_id' => $bookTransaction->id,
-                        'book_stock_batch_id' => $batch->id,
-                        'book_id' => $bookId,
-                        'quantity' => $quantityToTake,
-                        'unit_price' => $unitPrice,
-                        'total_price' => $itemTotalPrice,
-                    ]);
-
-                    // Update stok batch berdasarkan tipe transaksi
-                    $batch->decrement('remaining_quantity', $quantityToTake);
-                    if ($transactionTypeId == 3) {
-                        $batch->decrement('remaining_return_quantity', $quantityToTake);
-                    } elseif ($transactionTypeId == 4) {
-                        $batch->decrement('remaining_mutation_quantity', $quantityToTake);
-                    }
-
-                    $remainingQuantity -= $quantityToTake;
                 }
 
-                // Validasi akhir - seharusnya tidak terjadi karena sudah ada pre-validasi
-                if ($remainingQuantity > 0) {
-                    throw new \Exception(
-                        "Stok tidak mencukupi untuk buku '{$book->title}' saat pemrosesan. " .
-                        "Kekurangan: {$remainingQuantity} unit"
-                    );
-                }
             }
 
             // ===== UPDATE TOTAL VALUE PADA BOOK TRANSACTION =====
@@ -336,7 +383,7 @@ class BookStockController extends Controller
             DB::rollBack();
 
             return redirect()->back()
-                ->withErrors(['failed' => 'Gagal memproses order buku: ' . $e->getMessage()])
+                ->with(['failed' => 'Gagal memproses order buku: ' . $e->getMessage()])
                 ->withInput(); // Simpan input untuk ditampilkan kembali
         }
     }

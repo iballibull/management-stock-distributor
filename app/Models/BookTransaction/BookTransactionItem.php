@@ -19,9 +19,7 @@ class BookTransactionItem extends Model
         'quantity',
         'unit_price',
         'total_price',
-        'mutation_percentage',
         'return_percentage',
-        'mutation_percentage',
         'created_at',
         'updated_at',
     ];

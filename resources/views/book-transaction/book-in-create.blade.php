@@ -379,18 +379,6 @@
                 </div>
                 
                 <div>
-                    <label for="mutation_percentage_${currentIndex}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        Persentase Mutasi <span class="text-red-500">*</span>
-                    </label>
-                    <input type="number" name="books[${currentIndex}][mutation_percentage]" id="mutation_percentage_${currentIndex}" 
-                        min="0" max="100" step="0.01" required placeholder="0.0" autocomplete="off"
-                        class="${getInputClass('mutation_percentage')}"
-                        value="${oldBookData.mutation_percentage || ''}">
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Estimasi persentase buku yang bisa dimutasi (%)</p>
-                    ${getErrorHTML('mutation_percentage')}
-                </div>
-                
-                <div>
                     <label for="return_percentage_${currentIndex}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                         Persentase Retur <span class="text-red-500">*</span>
                     </label>
