@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
 use App\Models\User\User;
-use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rules;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Auth\Events\PasswordReset;
 
 class NewPasswordController extends Controller
 {
@@ -20,6 +21,32 @@ class NewPasswordController extends Controller
      */
     public function create(Request $request): View
     {
+        $token = $request->route('token');
+        $email = $request->get('email');
+
+        if (!$email) {
+            abort(400, 'Email parameter diperlukan dalam URL.');
+        }
+
+        // Validasi token dengan Hash::check karena token di DB ter-hash
+        $passwordReset = DB::table('password_reset_tokens')
+            ->where('email', $email)
+            ->first();
+
+        if (!$passwordReset || !Hash::check($token, $passwordReset->token)) {
+            abort(403, 'Token tidak valid atau sudah kedaluwarsa.');
+        }
+
+        // Cek apakah token sudah kedaluwarsa (biasanya 60 menit)
+        $tokenAge = now()->diffInMinutes($passwordReset->created_at);
+        $expireMinutes = config('auth.passwords.users.expire', 60);
+
+        if ($tokenAge > $expireMinutes) {
+            // Hapus token yang sudah kedaluwarsa
+            DB::table('password_reset_tokens')->where('email', $email)->delete();
+            abort(403, 'Token sudah kedaluwarsa.');
+        }
+
         return view('auth.reset-password', ['request' => $request]);
     }
 
