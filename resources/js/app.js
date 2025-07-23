@@ -3,6 +3,41 @@ import "flowbite";
 import "flowbite-datepicker";
 import "./sidebar.js";
 import "./swal.js";
+import {
+    Chart,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+    BarElement,
+    ArcElement,
+    Filler,
+    LineController,
+    BarController,
+    DoughnutController,
+} from "chart.js";
+
+// Register SEMUA komponen yang diperlukan
+Chart.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    LineController,
+    BarController,
+    DoughnutController,
+    Title,
+    Tooltip,
+    Legend,
+    BarElement,
+    ArcElement,
+    Filler
+);
+
+window.Chart = Chart;
 
 import $ from "jquery";
 window.$ = window.jQuery = $;
