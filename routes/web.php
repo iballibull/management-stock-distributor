@@ -65,7 +65,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/book-stock-in', [App\Http\Controllers\BookTransaction\BookTransactionController::class, 'createIn'])->name('book.stock.in.create');
         Route::post('/book-stock-in', [App\Http\Controllers\BookTransaction\BookTransactionController::class, 'storeIn'])->name('book.stock.in.store');
 
-        Route::get('/transaction', [App\Http\Controllers\Transaction\TransactionController::class, 'omzet'])->name('transaction.omzet.index');
+        Route::get('/omzet', [App\Http\Controllers\Transaction\TransactionController::class, 'omzet'])->name('transaction.omzet.index');
         Route::get('/revenue', [App\Http\Controllers\Transaction\TransactionController::class, 'revenue'])->name('transaction.revenue.index');
     });
 

@@ -9,7 +9,9 @@
                         d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
                         clip-rule="evenodd"></path>
                 </svg>
-                <span class="ml-1 text-gray-700 md:ml-2 dark:text-gray-500">Transaksi</span>
+                <a href="{{ route('transaction.omzet.index') }}"><span
+                        class="ml-1 text-gray-700 md:ml-2 dark:text-gray-500 hover:text-blue-600"
+                        aria-current="page">Transaksi</span></a>
             </div>
         </li>
         <li>
@@ -19,7 +21,9 @@
                         d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
                         clip-rule="evenodd"></path>
                 </svg>
-                <span class="ml-1 text-gray-400 md:ml-2 dark:text-gray-500">Omzet</span>
+                <a href="{{ route('transaction.omzet.index') }}"><span
+                        class="ml-1 text-gray-400 md:ml-2 dark:text-gray-500 hover:text-blue-600 truncate"
+                        aria-current="page">Omzet</span></a>
             </div>
         </li>
     @endcomponent
