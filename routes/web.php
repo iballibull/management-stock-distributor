@@ -17,6 +17,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/book-stock', [App\Http\Controllers\BookStock\BookStockController::class, 'index'])->name('book.stock.index');
 
+    Route::get('/payment', [App\Http\Controllers\Transaction\PaymentController::class, 'index'])->name('payment.index');
+    Route::get('/payment/{transactionId}', [App\Http\Controllers\Transaction\PaymentController::class, 'detail'])->name('payment.detail');
+
     // Route untuk Owner saja
     Route::middleware('role:1')->group(function () {
         Route::get('/invite', [App\Http\Controllers\Auth\InviteUserController::class, 'create'])->name('invite.create');

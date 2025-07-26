@@ -188,8 +188,10 @@
                                 </li>
                             @endrole
                             <li>
-                                <a href="https://flowbite-admin-dashboard.vercel.app/pages/maintenance/"
-                                    class="flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700">Pembayaran</a>
+                                <a href="{{ route('payment.index') }}"
+                                    class="flex items-center p-2 text-base rounded-lg pl-11 group transition duration-75
+                {{ $elementName === 'Pembayaran' ? 'bg-gray-100' : 'text-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700' }}">
+                                    Pembayaran</a>
                             </li>
                         </ul>
                     </li>
