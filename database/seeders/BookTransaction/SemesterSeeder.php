@@ -19,7 +19,7 @@ class SemesterSeeder extends Seeder
             [
                 'name' => 'SEMESTER 1 2025',
                 'year' => 2025,
-                'semester_number' => '2',
+                'semester_number' => '1',
                 'start_date' => '2025-07-01',
                 'end_date' => '2025-12-31',
                 'created_at' => $now,
@@ -28,7 +28,7 @@ class SemesterSeeder extends Seeder
             [
                 'name' => 'SEMESTER 2 2025',
                 'year' => 2025,
-                'semester_number' => '1',
+                'semester_number' => '2',
                 'start_date' => '2025-01-01',
                 'end_date' => '2025-06-30',
                 'created_at' => $now,

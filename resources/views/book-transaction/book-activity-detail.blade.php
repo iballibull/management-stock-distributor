@@ -398,7 +398,6 @@
                                     </th>
                                     @if ($bookTransaction->transactionType->name === 'KEDATANGAN')
                                         <th class="px-6 py-3"></th>
-                                        <th class="px-6 py-3"></th>
                                     @endif
                                     <th class="px-6 py-3"></th>
                                     <th class="px-6 py-3 text-center font-bold">

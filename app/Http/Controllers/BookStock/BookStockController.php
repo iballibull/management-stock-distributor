@@ -21,7 +21,7 @@ class BookStockController extends Controller
     {
         $role = auth()->user()->role->name;
 
-        $query = Book::with('category:id,name', 'curriculum:id,name', 'educationLevel:id,name')
+        $query = Book::withTrashed()->with('category:id,name', 'curriculum:id,name', 'educationLevel:id,name')
             ->withSum('bookStockBatches', 'remaining_quantity');
 
         if ($role !== 'Sales') {

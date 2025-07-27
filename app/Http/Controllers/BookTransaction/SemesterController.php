@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\BookTransaction;
 
+use App\Models\BookTransaction\BookTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\BookStock\BookStockBatch;
 use App\Models\BookTransaction\Semester;
 
 class SemesterController extends Controller
@@ -98,6 +101,7 @@ class SemesterController extends Controller
 
     public function update(Request $request, $semesterId)
     {
+
         try {
             // Validasi input
             $request->validate([
@@ -142,10 +146,17 @@ class SemesterController extends Controller
                 ]);
 
                 // Update data yang berelasi dengan semester ini
-                // TODO: Update semua data yang menggunakan $semesterId menjadi $existingSemester->id
+                BookStockBatch::where('semester_id', $semesterId)->update([
+                    'semester_id' => $existingSemester->id,
+                ]);
+
+                BookTransaction::where('semester_id', $semesterId)->update([
+                    'semester_id' => $existingSemester->id,
+                ]);
 
                 $semester->delete();
 
+                DB::commit();
                 return redirect()->route('semester.index')->with('success', 'Semester berhasil diperbarui');
             }
 
@@ -169,9 +180,11 @@ class SemesterController extends Controller
                 'end_date' => $endDate->format('Y-m-d'),
             ]);
 
+            DB::commit();
             return redirect()->route('semester.index')->with('success', 'Semester berhasil diperbarui');
 
         } catch (\Exception $e) {
+            DB::rollBack();
             return redirect()->back()->with('failed', 'Semester gagal diperbarui: ' . $e->getMessage());
         }
     }

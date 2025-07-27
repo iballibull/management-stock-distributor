@@ -9,9 +9,12 @@ use App\Models\Book\Category;
 use App\Models\Book\Curriculum;
 use Illuminate\Validation\Rule;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use App\Models\Book\EducationLevel;
 use Illuminate\Support\Facades\Storage;
+use App\Models\BookStock\BookStockBatch;
 use Illuminate\Validation\ValidationException;
+use App\Models\BookTransaction\BookTransactionItem;
 
 class BookController extends Controller
 {
@@ -253,27 +256,36 @@ class BookController extends Controller
                 Storage::disk('public')->delete($existingBook->image);
             }
 
-            // Restore existing book dengan data baru
-            $existingBook->restore(); // Restore dari soft delete
-            $existingBook->update([
-                'title' => $request->title,
-                'category_id' => $request->category_id,
-                'education_level_id' => $request->education_level_id,
-                'curriculum_id' => $request->curriculum_id,
-                'price' => $request->price,
-                'grade_number' => $request->grade_number,
-                'semester' => $request->semester,
-                'image' => $imagePath,
-                'created_at' => $book->created_at,
-            ]);
-
-            // Update data yang berelasi dengan book ini
             try {
-                // TODO
+                DB::beginTransaction();
+                // Restore existing book dengan data baru
+                $existingBook->restore(); // Restore dari soft delete
+                $existingBook->update([
+                    'title' => $request->title,
+                    'category_id' => $request->category_id,
+                    'education_level_id' => $request->education_level_id,
+                    'curriculum_id' => $request->curriculum_id,
+                    'price' => $request->price,
+                    'grade_number' => $request->grade_number,
+                    'semester' => $request->semester,
+                    'image' => $imagePath,
+                    'created_at' => $book->created_at,
+                ]);
 
-                // Hapus book yang sedang di-edit (soft delete)
+                // Update data yang berelasi dengan book ini
+
+                BookTransactionItem::where('book_id', $bookId)->update([
+                    'book_id' => $existingBook->id,
+                ]);
+
+                BookStockBatch::where('book_id', $bookId)->update([
+                    'book_id' => $existingBook->id,
+                ]);
                 $book->delete();
+                DB::commit();
             } catch (\Exception $e) {
+                DB::rollBack();
+
                 // Jika ada error saat update relasi, rollback
                 return redirect()->route('books.index')
                     ->with('failed', 'Gagal mengupdate data terkait: ' . $e->getMessage());
