@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Transaction;
 
-use App\Models\BookTransaction\TransactionType;
 use App\Models\User\User;
+use DB;
 use Illuminate\Http\Request;
+use App\Models\Transaction\Payment;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction\Transaction;
+use App\Models\BookTransaction\TransactionType;
 
 class PaymentController extends Controller
 {
@@ -64,5 +66,68 @@ class PaymentController extends Controller
         $users = User::withTrashed()->where('role_id', '!=', '2')->pluck('name', 'id');
 
         return view('transaction.payment', compact('transactions', 'users', 'transactionTypes', 'status', 'roleId', 'totalPayment', 'totalRemainingPaid', 'totalPaid'));
+    }
+
+    public function detail($transactionId)
+    {
+        $roleId = auth()->user()->role_id;
+
+        // Build query untuk transaction detail
+        $query = Transaction::with(['payments', 'bookTransaction.transactionType', 'user']);
+
+        // Jika bukan admin, hanya bisa lihat transaksi sendiri
+        if ($roleId != 2) {
+            $query->where('user_id', auth()->id());
+        }
+
+        // Find transaction
+        $transaction = $query->findOrFail($transactionId);
+
+        return view('transaction.payment-detail', compact('transaction'));
+    }
+
+    public function store(Request $request, $transactionId)
+    {
+        try {
+            $request->validate([
+                'amount' => 'required|numeric|min:0',
+                'payment_method' => 'required|in:CASH,TRANSFER',
+                'notes' => 'nullable|string|max:255',
+            ]);
+
+            // Cek apakah transaksi ada dan user berhak mengaksesnya
+            $transaction = Transaction::findOrFail($transactionId);
+            $remainingAmount = $transaction->remaining_amount;
+
+            if ($remainingAmount <= 0 || $remainingAmount < $request->input('amount')) {
+                throw ValidationException::withMessages([
+                    'amount' => ['Jumlah pembayaran tidak valid.'],
+                ]);
+            }
+
+            DB::beginTransaction();
+            // Buat pembayaran baru
+            Payment::insert([
+                'transaction_id' => $transaction->id,
+                'amount' => $request->input('amount'),
+                'payment_method' => $request->input('payment_method'),
+                'notes' => $request->input('notes'),
+                'payment_date' => now(),
+                'validate_by' => auth()->id(),
+            ]);
+
+            $transaction->update([
+                'status' => $remainingAmount - $request->input('amount') == 0 ? 'PAID' : 'INSTALLMENT',
+                'amount_paid' => $transaction->amount_paid + $request->input('amount'),
+                'remaining_amount' => max(0, $transaction->remaining_amount - $request->input('amount')),
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('payment.detail', $transaction->id)->with('success', 'Pembayaran berhasil ditambahkan.');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()->route('payment.detail', $transaction->id)->with('failed', 'Terjadi kesalahan saat menambahkan pembayaran.');
+        }
     }
 }

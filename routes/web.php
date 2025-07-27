@@ -75,6 +75,10 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:1,3')->group(function () {
         Route::post('/book-stock/order', [App\Http\Controllers\BookStock\BookStockController::class, 'order'])->name('book.stock.order');
     });
+
+    Route::middleware('role:2')->group(function () {
+        Route::post('/payment/{transactionId}', [App\Http\Controllers\Transaction\PaymentController::class, 'store'])->name('payment.store');
+    });
 });
 
 require __DIR__ . '/auth.php';
