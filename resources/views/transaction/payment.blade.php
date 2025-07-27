@@ -232,15 +232,15 @@
                                                 </span>
                                             </td>
                                             <td
-                                                class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-left">
+                                                class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
                                                 {{ 'Rp ' . number_format($transaction->remaining_amount, 0, ',', '.') }}
                                             </td>
                                             <td
-                                                class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-left">
+                                                class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
                                                 {{ 'Rp ' . number_format($transaction->amount_paid, 0, ',', '.') }}
                                             </td>
                                             <td
-                                                class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-left">
+                                                class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
                                                 {{ 'Rp ' . number_format($transaction->total_amount, 0, ',', '.') }}
                                             </td>
                                             <td class="px-6 py-4 w-[50px] text-center">

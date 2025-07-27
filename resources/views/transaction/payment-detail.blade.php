@@ -49,14 +49,13 @@
                     <div class="text-sm text-gray-500 dark:text-gray-400">Total Pembayaran</div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                    <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+                    <div class="text-2xl font-bold text-gray-900 dark:text-green-400">
                         Rp {{ number_format($transaction->amount_paid, 0, ',', '.') }}
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">Sudah Dibayar</div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                    <div
-                        class="text-2xl font-bold {{ $transaction->remaining_amount > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' }}">
+                    <div class="text-2xl font-bold text-gray-900">
                         Rp {{ number_format($transaction->remaining_amount, 0, ',', '.') }}
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">Sisa Pembayaran</div>
@@ -116,7 +115,8 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal
                             Transaksi</label>
                         <p class="text-sm text-gray-900 dark:text-white">
-                            {{ $transaction->created_at->format('d/m/Y H:i') }}</p>
+                            {{ Illuminate\Support\Carbon::parse($transaction->bookTransaction->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') }}
+                        </p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Detail</label>
@@ -204,7 +204,7 @@
                                 <th scope="col" class="px-6 py-3">Jumlah</th>
                                 <th scope="col" class="px-6 py-3">Metode</th>
                                 <th scope="col" class="px-6 py-3">Catatan</th>
-                                <th scope="col" class="px-6 py-3">Dicatat Oleh</th>
+                                <th scope="col" class="px-6 py-3">Di Validasi Oleh</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -212,7 +212,9 @@
                                 <tr class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
                                     <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ $key + 1 }}
                                     </td>
-                                    <td class="px-6 py-4">{{ $payment->created_at }}</td>
+                                    <td class="px-6 py-4">
+                                        {{ Illuminate\Support\Carbon::parse($payment->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') }}
+                                    </td>
                                     <td class="px-6 py-4 font-semibold text-green-600 dark:text-green-400">
                                         Rp {{ number_format($payment->amount, 0, ',', '.') }}
                                     </td>

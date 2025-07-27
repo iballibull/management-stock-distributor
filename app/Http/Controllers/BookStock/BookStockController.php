@@ -348,6 +348,7 @@ class BookStockController extends Controller
             // ===== BUAT TRANSAKSI KEUANGAN JIKA BOOK TRANSACTION DISETUJUI =====
             if ($bookTransaction->status === 'approved') {
                 if ($bookTransaction->transactionType->name === 'PENGAMBILAN') {
+                    $profitAmount = $totalValue - $totalPurchase;
                     // Buat transaksi belum bayar untuk pengambilan/penjualan customer
                     Transaction::create([
                         'book_transaction_id' => $bookTransaction->id,
@@ -356,7 +357,7 @@ class BookStockController extends Controller
                         'status' => 'UNPAID',
                         'remaining_amount' => $totalValue,
                         'amount_paid' => 0,
-                        'profit_amount' => $totalValue - $totalPurchase,
+                        'profit_amount' => $profitAmount,
                     ]);
                 } elseif (in_array($bookTransaction->transactionType->name, ['RETUR', 'MUTASI'])) {
                     // Buat transaksi lunas untuk retur/mutasi (tracking internal)

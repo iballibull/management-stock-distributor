@@ -260,9 +260,11 @@ class BookTransactionController extends Controller
                 return back()->with('success', 'Transaksi berhasil di setujui dan stok buku berhasil ditambahkan.');
             } else {
                 $totalPurchase = BookTransactionItem::where('book_transaction_id', $bookTransaction->id)
-                    ->sum(DB::raw('quantity * unit_price'));
+                    ->join('book_stock_batches', 'book_transaction_items.book_stock_batch_id', '=', 'book_stock_batches.id')
+                    ->sum(DB::raw('book_transaction_items.quantity * book_stock_batches.purchase_price'));
 
                 $totalValue = $bookTransaction->total_value;
+                $profitAmount = $totalValue - $totalPurchase;
 
                 Transaction::create([
                     'book_transaction_id' => $bookTransaction->id,
@@ -271,7 +273,7 @@ class BookTransactionController extends Controller
                     'status' => 'UNPAID',
                     'remaining_amount' => $totalValue,
                     'amount_paid' => 0,
-                    'profit_amount' => $totalValue - $totalPurchase,
+                    'profit_amount' => $profitAmount,
                 ]);
 
 

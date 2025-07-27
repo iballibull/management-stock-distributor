@@ -114,12 +114,12 @@ class TransactionController extends Controller
         }
 
         // Summary statistics
-        $totalRevenue = (clone $baseQuery)->sum('amount_paid');
+        $totalRevenue = (clone $baseQuery)->whereIn('status', ['PAID', 'INSTALLMENT'])->sum('amount_paid');
         $totalTransactions = (clone $baseQuery)->count();
         $avgDaily = $totalTransactions > 0 ? $totalRevenue / 365 : 0; // Per hari dalam setahun
 
         // Pendapatan yang belum terealisasi
-        $totalRemainingAmount = (clone $baseQuery)->sum('remaining_amount');
+        $totalRemainingAmount = (clone $baseQuery)->whereIn('status', ['UNPAID', 'INSTALLMENT'])->sum('remaining_amount');
 
         // Recent transactions untuk tabel
         $recentTransactions = Transaction::with(['bookTransaction.transactionType', 'bookTransaction.user'])
