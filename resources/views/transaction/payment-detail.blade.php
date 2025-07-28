@@ -71,7 +71,7 @@
                         <p class="text-sm text-gray-900 dark:text-white">{{ $transaction->id }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama</label>
                         <p class="text-sm text-gray-900 dark:text-white">{{ $transaction->user->name }}</p>
                     </div>
                     <div>

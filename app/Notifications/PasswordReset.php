@@ -43,6 +43,7 @@ class PasswordReset extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
+            ->subject('Atur Ulang Password')
             ->greeting('CV. Inti Bina Ilmu')
             ->line('Hallo!')
             ->line('Kami menerima permintaan untuk mengatur ulang password Anda.')
