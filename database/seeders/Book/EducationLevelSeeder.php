@@ -18,6 +18,7 @@ class EducationLevelSeeder extends Seeder
 
         $data = [
             ['name' => 'PAUD', 'created_at' => $now, 'updated_at' => $now],
+            ['name' => 'TK', 'created_at' => $now, 'updated_at' => $now],
             ['name' => 'SD', 'created_at' => $now, 'updated_at' => $now],
             ['name' => 'MI', 'created_at' => $now, 'updated_at' => $now],
             ['name' => 'SMP', 'created_at' => $now, 'updated_at' => $now],
@@ -25,6 +26,8 @@ class EducationLevelSeeder extends Seeder
             ['name' => 'SMA', 'created_at' => $now, 'updated_at' => $now],
             ['name' => 'MA', 'created_at' => $now, 'updated_at' => $now],
             ['name' => 'SMK', 'created_at' => $now, 'updated_at' => $now],
+            ['name' => 'SMA/MA', 'created_at' => $now, 'updated_at' => $now],
+            ['name' => 'SD/MI', 'created_at' => $now, 'updated_at' => $now],
         ];
 
         EducationLevel::insert($data);
