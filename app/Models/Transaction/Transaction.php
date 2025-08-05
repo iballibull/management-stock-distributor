@@ -25,6 +25,7 @@ class Transaction extends Model
         'total_amount',
         'remaining_amount',
         'amount_paid',
+        'created_at',
     ];
 
     public function bookTransaction()

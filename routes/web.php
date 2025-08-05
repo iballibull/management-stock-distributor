@@ -75,6 +75,8 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:2')->group(function () {
         Route::post('/payment/{transactionId}', [App\Http\Controllers\Transaction\PaymentController::class, 'store'])->name('payment.store');
+        Route::put('/payment/{paymentId}', [App\Http\Controllers\Transaction\PaymentController::class, 'update'])->name('payment.update');
+        Route::delete('/payment/{paymentId}', [App\Http\Controllers\Transaction\PaymentController::class, 'destroy'])->name('payment.destroy');
     });
 });
 

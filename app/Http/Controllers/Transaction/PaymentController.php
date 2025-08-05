@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Transaction;
 
-use App\Models\User\User;
 use DB;
+use App\Models\User\User;
 use Illuminate\Http\Request;
 use App\Models\Transaction\Payment;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction\Transaction;
+use Illuminate\Validation\ValidationException;
 use App\Models\BookTransaction\TransactionType;
 
 class PaymentController extends Controller
@@ -128,6 +129,95 @@ class PaymentController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             return redirect()->route('payment.detail', $transaction->id)->with('failed', 'Terjadi kesalahan saat menambahkan pembayaran.');
+        }
+    }
+
+    public function update(Request $request, $paymentId)
+    {
+        try {
+            $request->validate([
+                'amount' => 'required|numeric|min:0',
+                'payment_method' => 'required|in:CASH,TRANSFER',
+                'notes' => 'nullable|string|max:255',
+            ]);
+
+            // Temukan pembayaran berdasarkan ID
+            $payment = Payment::findOrFail($paymentId);
+            $transaction = $payment->transaction;
+
+            $amountPaid = $request->input('amount');
+            $remainingAmount = $transaction->remaining_amount + $payment->amount;
+
+            // Validasi jumlah pembayaran
+            if ($amountPaid < 0 || $amountPaid > $remainingAmount) {
+                throw ValidationException::withMessages([
+                    'amount' => ['Jumlah pembayaran tidak valid.'],
+                ]);
+            }
+
+            DB::beginTransaction();
+            // Update pembayaran
+            $payment->update([
+                'amount' => $amountPaid,
+                'payment_method' => $request->input('payment_method'),
+                'notes' => $request->input('notes'),
+                'validate_by' => auth()->user()->id,
+            ]);
+
+            $amountPaidTransaction = $transaction->payments->sum('amount');
+            $remainingAmount = $transaction->total_amount - $amountPaidTransaction;
+
+            // Update transaksi
+            $transaction->update([
+                'amount_paid' => $amountPaidTransaction,
+                'remaining_amount' => $remainingAmount,
+                'status' => $remainingAmount == 0 ? 'PAID' : 'INSTALLMENT',
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('payment.detail', $transaction->id)->with('success', 'Pembayaran berhasil diupdate.');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            return redirect()->route('payment.detail', $transaction->id)->with('failed', 'Terjadi kesalahan saat mengupdate pembayaran: ' . $th->getMessage());
+        }
+    }
+
+    public function destroy($paymentId)
+    {
+        try {
+            // Temukan pembayaran berdasarkan ID
+            $payment = Payment::findOrFail($paymentId);
+            $transaction = $payment->transaction;
+
+            DB::beginTransaction();
+
+            $remainingAmount = $transaction->remaining_amount + $payment->amount;
+            $amountPaid = $transaction->amount_paid - $payment->amount;
+
+            // Hapus pembayaran
+            $payment->delete();
+
+            $status = match (true) {
+                $remainingAmount == 0 => 'PAID',
+                $remainingAmount == $transaction->total_amount => 'UNPAID',
+                default => 'INSTALLMENT',
+            };
+
+            // Update transaksi
+            $transaction->update([
+                'amount_paid' => $amountPaid,
+                'remaining_amount' => $remainingAmount,
+                'status' => $status,
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('payment.detail', $transaction->id)->with('success', 'Pembayaran berhasil dihapus.');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()->route('payment.detail', $transaction->id)->with('failed', 'Terjadi kesalahan saat menghapus pembayaran: ' . $th->getMessage());
         }
     }
 }
