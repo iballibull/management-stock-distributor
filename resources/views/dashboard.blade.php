@@ -50,7 +50,7 @@
                     class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                            Transaksi Menunggu Persetujuan ({{ $transactions->count() }})
+                            Transaksi Buku Menunggu Persetujuan ({{ $transactions->count() }})
                         </h3>
                     </div>
                     <div class="overflow-x-auto">
@@ -69,16 +69,27 @@
                                     <tr class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
                                         <td class="px-6 py-4">{{ $transaction->user->name }}</td>
                                         <td class="px-6 py-4">
+                                            @php
+                                                $transactionType = $transaction->transactionType->name ?? 'Unknown';
+                                                $badgeClass = match ($transactionType) {
+                                                    'PENGAMBILAN'
+                                                        => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+                                                    default
+                                                        => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
+                                                };
+                                            @endphp
                                             <span
-                                                class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
-                                                {{ $transaction->transactionType->name }}
+                                                class="inline-flex px-2 py-1 text-xs font-medium {{ $badgeClass }} rounded-full">
+                                                {{ $transactionType }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4">{{ $transaction->created_at->format('d/m/Y H:i') }}</td>
+                                        <td class="px-6 py-4">
+                                            {{ Illuminate\Support\Carbon::parse($transaction->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') }}
+                                        </td>
                                         <td class="px-6 py-4">
                                             <span
                                                 class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
-                                                PENDING
+                                                MENUNGGU
                                             </span>
                                         </td>
                                         <td class="px-6 py-4">
@@ -91,7 +102,7 @@
                                 @empty
                                     <tr>
                                         <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                                            Tidak ada transaksi yang menunggu persetujuan
+                                            Tidak ada transaksi buku yang menunggu persetujuan
                                         </td>
                                     </tr>
                                 @endforelse
@@ -157,11 +168,13 @@
                                                 {{ $transaction->transactionType->name }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4">{{ $transaction->created_at->format('d/m/Y H:i') }}</td>
+                                        <td class="px-6 py-4">
+                                            {{ Illuminate\Support\Carbon::parse($transaction->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') }}
+                                        </td>
                                         <td class="px-6 py-4">
                                             <span
                                                 class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
-                                                PENDING
+                                                MENUNGGU
                                             </span>
                                         </td>
                                         <td class="px-6 py-4">

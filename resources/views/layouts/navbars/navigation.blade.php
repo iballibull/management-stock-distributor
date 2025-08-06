@@ -18,7 +18,7 @@
                     </svg>
                 </button>
                 <a href="/" class="flex ml-2 md:mr-24">
-                    <img src="{{ asset('images/icon.jpeg') }}" class="h-8 mr-3" alt="Logo">
+                    <img src="{{ asset('images/icon.png') }}" class="h-8 mr-3" alt="Logo">
                     <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">
                         Inti Bina Ilmu</span>
                 </a>
