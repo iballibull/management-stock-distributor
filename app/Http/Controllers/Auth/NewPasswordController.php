@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Models\User\User;
+use Carbon\Carbon;
 use Illuminate\View\View;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -34,11 +35,11 @@ class NewPasswordController extends Controller
             ->first();
 
         if (!$passwordReset || !Hash::check($token, $passwordReset->token)) {
-            abort(403, 'Token tidak valid atau sudah kedaluwarsa.');
+            abort(403, 'Token tidak valid.');
         }
 
         // Cek apakah token sudah kedaluwarsa (biasanya 60 menit)
-        $tokenAge = now()->diffInMinutes($passwordReset->created_at);
+        $tokenAge = Carbon::parse($passwordReset->created_at)->diffInMinutes(Carbon::now());
         $expireMinutes = config('auth.passwords.users.expire', 60);
 
         if ($tokenAge > $expireMinutes) {
