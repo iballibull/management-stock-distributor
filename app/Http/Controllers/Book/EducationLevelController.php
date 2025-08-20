@@ -73,7 +73,7 @@ class EducationLevelController extends Controller
             } else {
                 // Jika tidak ada konflik nama, update normal
                 $educationLevel->update([
-                    'name' => $request->name
+                    'name' => Str::upper($request->name),
                 ]);
 
                 return back()->with('success', 'Tingkat pendidikan berhasil diupdate');

@@ -38,7 +38,7 @@ class CategoryController extends Controller
 
             // Cek apakah nama sudah digunakan (termasuk yang soft deleted)
             $existing = Category::withTrashed()
-                ->where('name', 'LIKE', '%' . $request->name . '%')
+                ->where('name', '=', $request->name)
                 ->first();
 
             if ($existing) {

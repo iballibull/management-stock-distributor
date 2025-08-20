@@ -34,7 +34,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                     <div class="text-2xl font-bold text-gray-900 dark:text-white">
-                        Rp {{ number_format($totalRevenue ?? 0, 0, ',', '.') }}
+                        Rp {{ number_format($totalRevenue ?? 0, 2, ',', '.') }}
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">Total Pendapatan</div>
                 </div>
@@ -46,13 +46,13 @@
                 </div>
                 <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                     <div class="text-2xl font-bold text-gray-900 dark:text-white">
-                        Rp {{ number_format($avgDaily ?? 0, 0, ',', '.') }}
+                        Rp {{ number_format($avgDaily ?? 0, 2, ',', '.') }}
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">Rata-rata Harian</div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                     <div class="text-2xl font-bold text-gray-900 dark:text-white">
-                        Rp {{ number_format($totalRemainingAmount ?? 0, 0, ',', '.') }}
+                        Rp {{ number_format($totalRemainingAmount ?? 0, 2, ',', '.') }}
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">Pendapatan yang Belum Terealisasi</div>
                 </div>
@@ -163,13 +163,13 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 font-semibold whitespace-nowrap">
-                                        Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}
+                                        Rp {{ number_format($transaction->total_amount, 2, ',', '.') }}
                                     </td>
                                     <td class="px-6 py-4 font-semibold whitespace-nowrap">
-                                        Rp {{ number_format($transaction->amount_paid, 0, ',', '.') }}
+                                        Rp {{ number_format($transaction->amount_paid, 2, ',', '.') }}
                                     </td>
                                     <td class="px-6 py-4 font-semibold whitespace-nowrap">
-                                        Rp {{ number_format($transaction->remaining_amount, 0, ',', '.') }}
+                                        Rp {{ number_format($transaction->remaining_amount, 2, ',', '.') }}
                                     </td>
                                     <td class="px-6 py-4">
                                         <a href="{{ route('book.activity.detail', ['transactionId' => $transaction->book_transaction_id]) }}"

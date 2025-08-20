@@ -35,6 +35,13 @@ class ProfileController extends Controller
         // Validasi seluruh input (termasuk validasi photo)
         $validated = $request->validated();
 
+        // Validasi email untuk memastikan tidak ada duplikasi
+        if ($user->email !== $validated['email']) {
+            $request->validate([
+                'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            ]);
+        }
+
         // Handle file photo jika ada
         if ($request->hasFile('photo')) {
             $photo = $request->file('photo');

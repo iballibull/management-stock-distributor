@@ -37,8 +37,8 @@ class BookActivityController extends Controller
         }
 
         // Filter by transaction type
-        if ($request->filled('transaction_type')) {
-            $query->where('transaction_type_id', $request->transaction_type);
+        if ($request->filled('transaction_type_id')) {
+            $query->where('transaction_type_id', $request->transaction_type_id);
         }
 
         // Filter by status
@@ -82,7 +82,7 @@ class BookActivityController extends Controller
             $transactionTypes = TransactionType::pluck('name', 'id');
         } else {
             $users = User::where('id', $user->id)->pluck('name', 'id');
-            $transactionTypes = TransactionType::where('name', 'KEDATANGAN')->pluck('name', 'id');
+            $transactionTypes = TransactionType::where('name', 'PENGAMBILAN')->pluck('name', 'id');
         }
         $semesters = Semester::withTrashed()->pluck('name', 'id');
 

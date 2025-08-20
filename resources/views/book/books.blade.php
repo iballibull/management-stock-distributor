@@ -126,7 +126,7 @@
                                 placeholder=" " autocomplete="off" value="{{ request('price') ?? '' }}" />
                             <label for="price"
                                 class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-                                Harga</label>
+                                Harga Kurang Dari</label>
                         </div>
 
                         <div class="relative z-0 basis-full sm:basis-1/2 lg:basis-1/4 flex-1 group md:max-w-[140]">
@@ -177,7 +177,7 @@
                                             No
                                         </th>
                                         <th
-                                            class="px-6 py-3 w-[50px] text-xs text-center font-medium text-gray-500 uppercase dark:text-gray-400">
+                                            class="px-6 py-3 w-[300px] text-xs text-center font-medium text-gray-500 uppercase dark:text-gray-400">
                                             @sortablelink('title', 'Judul')
                                         </th>
                                         <th
@@ -213,22 +213,23 @@
                                                 class="px-6 py-4 w-[50px] text-gray-900 font-medium dark:text-white text-center">
                                                 {{ $books->firstItem() + $key }}
                                             </td>
-                                            <td class="flex items-center p-4 mr-12 space-x-6 whitespace-nowrap"
+                                            <td class="px-6 py-4 w-[300px] min-w-[300px] text-gray-900 font-medium dark:text-white"
                                                 title="{{ $book->title }}">
-                                                <div class="flex-shrink-0">
-                                                    <img class="w-12 h-12 object-cover rounded-md border border-gray-200 dark:border-gray-700"
-                                                        src="{{ asset('storage/' . ($book->image ?? 'bookImages/default.jpg')) }}"
-                                                        alt="Foto Buku {{ $book->title }}">
-                                                </div>
-
-                                                <div class="flex-1 min-w-0">
-                                                    <div
-                                                        class="text-base font-semibold text-gray-900 dark:text-white truncate">
-                                                        {{ \Illuminate\Support\Str::title($book->title) }}
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="flex-shrink-0">
+                                                        <img class="w-12 h-12 object-cover rounded-md border border-gray-200 dark:border-gray-700"
+                                                            src="{{ asset('storage/' . ($book->image ?? 'bookImages/default.jpg')) }}"
+                                                            alt="Foto Buku {{ $book->title }}">
                                                     </div>
-                                                    <div
-                                                        class="text-sm font-normal text-gray-500 dark:text-gray-400 truncate">
-                                                        {{ $book->category->name }}
+                                                    <div class="flex-1 min-w-0">
+                                                        <div
+                                                            class="text-base font-semibold text-gray-900 dark:text-white truncate">
+                                                            {{ \Illuminate\Support\Str::title($book->title) }}
+                                                        </div>
+                                                        <div
+                                                            class="text-sm font-normal text-gray-500 dark:text-gray-400 truncate">
+                                                            {{ $book->category->name }}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -246,7 +247,7 @@
                                             </td>
                                             <td
                                                 class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">
-                                                {{ 'Rp ' . number_format($book->price, 0, ',', '.') }}
+                                                {{ 'Rp ' . number_format($book->price, 2, ',', '.') }}
                                             </td>
                                             <td
                                                 class="px-6 py-4 w-[200px] text-gray-900 font-medium dark:text-white text-center">

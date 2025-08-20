@@ -56,7 +56,11 @@ class PaymentController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $transactionTypes = TransactionType::where('name', '!=', 'KEDATANGAN')->pluck('name', 'id');
+        if ($roleId == 1 || $roleId == 2) {
+            $transactionTypes = TransactionType::where('name', '!=', 'KEDATANGAN')->pluck('name', 'id');
+        } else {
+            $transactionTypes = TransactionType::where('name', 'PENGAMBILAN')->pluck('name', 'id');
+        }
 
         $status = [
             'UNPAID' => 'BELUM DIBAYAR',
@@ -90,6 +94,8 @@ class PaymentController extends Controller
     public function store(Request $request, $transactionId)
     {
         try {
+            $transaction = Transaction::findOrFail($transactionId);
+
             $request->validate([
                 'amount' => 'required|numeric|min:0',
                 'payment_method' => 'required|in:CASH,TRANSFER',
@@ -97,7 +103,6 @@ class PaymentController extends Controller
             ]);
 
             // Cek apakah transaksi ada dan user berhak mengaksesnya
-            $transaction = Transaction::findOrFail($transactionId);
             $remainingAmount = $transaction->remaining_amount;
 
             if ($remainingAmount <= 0 || $remainingAmount < $request->input('amount')) {
@@ -128,22 +133,23 @@ class PaymentController extends Controller
             return redirect()->route('payment.detail', $transaction->id)->with('success', 'Pembayaran berhasil ditambahkan.');
         } catch (\Throwable $th) {
             DB::rollBack();
-            return redirect()->route('payment.detail', $transaction->id)->with('failed', 'Terjadi kesalahan saat menambahkan pembayaran.');
+            return redirect()->route('payment.detail', $transaction->id)->with('failed', 'Terjadi kesalahan saat menambahkan pembayaran. ' . $th->getMessage());
         }
     }
 
     public function update(Request $request, $paymentId)
     {
         try {
+            // Temukan pembayaran berdasarkan ID
+            $payment = Payment::findOrFail($paymentId);
+            $transaction = $payment->transaction;
+
             $request->validate([
                 'amount' => 'required|numeric|min:0',
                 'payment_method' => 'required|in:CASH,TRANSFER',
                 'notes' => 'nullable|string|max:255',
             ]);
 
-            // Temukan pembayaran berdasarkan ID
-            $payment = Payment::findOrFail($paymentId);
-            $transaction = $payment->transaction;
 
             $amountPaid = $request->input('amount');
             $remainingAmount = $transaction->remaining_amount + $payment->amount;

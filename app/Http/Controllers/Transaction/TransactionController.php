@@ -41,7 +41,7 @@ class TransactionController extends Controller
         // Summary statistics
         $totalOmzet = (clone $baseQuery)->sum('total_amount');
         $totalTransactions = (clone $baseQuery)->count();
-        $avgDaily = $totalTransactions > 0 ? $totalOmzet / 365 : 0; // Per hari dalam setahun
+        $avgDaily = $totalTransactions > 0 ? round($totalOmzet / 365, 2) : 0; // Per hari dalam setahun
 
         // Estimasi keuntungan
         $totalProfit = (clone $baseQuery)->sum('profit_amount');
@@ -116,7 +116,7 @@ class TransactionController extends Controller
         // Summary statistics
         $totalRevenue = (clone $baseQuery)->whereIn('status', ['PAID', 'INSTALLMENT'])->sum('amount_paid');
         $totalTransactions = (clone $baseQuery)->count();
-        $avgDaily = $totalTransactions > 0 ? $totalRevenue / 365 : 0; // Per hari dalam setahun
+        $avgDaily = $totalTransactions > 0 ? round($totalRevenue / 365, 2) : 0; // Per hari dalam setahun
 
         // Pendapatan yang belum terealisasi
         $totalRemainingAmount = (clone $baseQuery)->whereIn('status', ['UNPAID', 'INSTALLMENT'])->sum('remaining_amount');

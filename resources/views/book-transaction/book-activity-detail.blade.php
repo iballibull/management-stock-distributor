@@ -182,7 +182,7 @@
                         <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
                             <span class="text-sm text-gray-500 dark:text-gray-400">Total Nilai</span>
                             <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                                Rp {{ number_format($bookTransaction->total_value, 0, ',', '.') }}
+                                Rp {{ number_format($bookTransaction->total_value, 2, ',', '.') }}
                             </span>
                         </div>
 
@@ -335,17 +335,17 @@
                                             @if (isset($item->price_variations) && $item->price_variations)
                                                 <span class="text-orange-600"
                                                     title="Harga rata-rata dari {{ $item->batch_count ?? 1 }} batch">
-                                                    Rp {{ number_format($item->unit_price, 0, ',', '.') }}
+                                                    Rp {{ number_format($item->unit_price, 2, ',', '.') }}
                                                     <span class="text-xs">*</span>
                                                 </span>
                                             @else
-                                                Rp {{ number_format($item->unit_price, 0, ',', '.') }}
+                                                Rp {{ number_format($item->unit_price, 2, ',', '.') }}
                                             @endif
                                         </td>
 
                                         {{-- Total Price --}}
                                         <td class="px-6 py-4 text-center font-semibold">
-                                            Rp {{ number_format($item->total_price, 0, ',', '.') }}
+                                            Rp {{ number_format($item->total_price, 2, ',', '.') }}
                                         </td>
                                     </tr>
 
@@ -368,10 +368,10 @@
                                                                     <div><strong>Qty:</strong>
                                                                         {{ number_format($batch->quantity) }}</div>
                                                                     <div><strong>Harga:</strong> Rp
-                                                                        {{ number_format($batch->unit_price, 0, ',', '.') }}
+                                                                        {{ number_format($batch->unit_price, 2, ',', '.') }}
                                                                     </div>
                                                                     <div><strong>Total:</strong> Rp
-                                                                        {{ number_format($batch->total_price, 0, ',', '.') }}
+                                                                        {{ number_format($batch->total_price, 2, ',', '.') }}
                                                                     </div>
                                                                     @if ($bookTransaction->transactionType->name === 'KEDATANGAN')
                                                                         <div><strong>Retur:</strong>
@@ -401,7 +401,7 @@
                                     @endif
                                     <th class="px-6 py-3"></th>
                                     <th class="px-6 py-3 text-center font-bold">
-                                        Rp {{ number_format($bookTransaction->total_value, 0, ',', '.') }}
+                                        Rp {{ number_format($bookTransaction->total_value, 2, ',', '.') }}
                                     </th>
                                 </tr>
                             </tfoot>

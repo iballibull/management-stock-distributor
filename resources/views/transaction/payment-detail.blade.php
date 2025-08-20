@@ -44,19 +44,19 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                     <div class="text-2xl font-bold text-gray-900 dark:text-white">
-                        Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}
+                        Rp {{ number_format($transaction->total_amount, 2, ',', '.') }}
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">Total Pembayaran</div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                     <div class="text-2xl font-bold text-gray-900 dark:text-green-400">
-                        Rp {{ number_format($transaction->amount_paid, 0, ',', '.') }}
+                        Rp {{ number_format($transaction->amount_paid, 2, ',', '.') }}
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">Sudah Dibayar</div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                     <div class="text-2xl font-bold text-gray-900">
-                        Rp {{ number_format($transaction->remaining_amount, 0, ',', '.') }}
+                        Rp {{ number_format($transaction->remaining_amount, 2, ',', '.') }}
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">Sisa Pembayaran</div>
                 </div>
@@ -148,7 +148,7 @@
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                                 <p class="mt-1 text-xs text-gray-500">Maksimal: Rp
-                                    {{ number_format($transaction->remaining_amount, 0, ',', '.') }}</p>
+                                    {{ number_format($transaction->remaining_amount, 2, ',', '.') }}</p>
                             </div>
                             <div>
                                 <label for="payment_method"
@@ -219,7 +219,7 @@
                                         {{ Illuminate\Support\Carbon::parse($payment->updated_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') }}
                                     </td>
                                     <td class="px-6 py-4 font-semibold text-green-600 dark:text-green-400">
-                                        Rp {{ number_format($payment->amount, 0, ',', '.') }}
+                                        Rp {{ number_format($payment->amount, 2, ',', '.') }}
                                     </td>
                                     <td class="px-6 py-4">
                                         <span
@@ -395,7 +395,7 @@
                                                             <h3 class="mt-5 mb-6 text-lg text-gray-500 dark:text-gray-400">
                                                                 Yakin ingin menghapus pembayaran dengan jumlah
                                                                 <b>Rp
-                                                                    {{ number_format($payment->amount, 0, ',', '.') }}</b>
+                                                                    {{ number_format($payment->amount, 2, ',', '.') }}</b>
                                                                 dan metode
                                                                 <b>{{ $payment->payment_method }}</b>?
                                                             </h3>

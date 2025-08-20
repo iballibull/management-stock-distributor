@@ -12,25 +12,25 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                         <div class="text-2xl font-bold text-gray-900 dark:text-white">
-                            Rp {{ number_format($totalOmzet, 0, ',', '.') }}
+                            Rp {{ number_format($totalOmzet, 2, ',', '.') }}
                         </div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">Total Omzet Tahun Ini</div>
                     </div>
                     <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                         <div class="text-2xl font-bold text-gray-900 ">
-                            Rp {{ number_format($totalPendapatan, 0, ',', '.') }}
+                            Rp {{ number_format($totalPendapatan, 2, ',', '.') }}
                         </div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">Total Pendapatan</div>
                     </div>
                     <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                         <div class="text-2xl font-bold text-gray-900 dark:text-blue-400">
-                            Rp {{ number_format($monthlyOmzet, 0, ',', '.') }}
+                            Rp {{ number_format($monthlyOmzet, 2, ',', '.') }}
                         </div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">Omzet Bulan Ini</div>
                     </div>
                     <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                         <div class="text-2xl font-bold text-gray-900 dark:text-red-400">
-                            Rp {{ number_format($remainingPaid, 0, ',', '.') }}
+                            Rp {{ number_format($remainingPaid, 2, ',', '.') }}
                         </div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">Sisa Pembayaran</div>
                     </div>
@@ -117,25 +117,25 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                         <div class="text-2xl font-bold text-gray-900 dark:text-white">
-                            Rp {{ number_format($myTotalOmzet, 0, ',', '.') }}
+                            Rp {{ number_format($myTotalOmzet, 2, ',', '.') }}
                         </div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">Omzet Saya Tahun Ini</div>
                     </div>
                     <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                         <div class="text-2xl font-bold text-gray-900 dark:text-blue-400">
-                            Rp {{ number_format($myMonthlyOmzet, 0, ',', '.') }}
+                            Rp {{ number_format($myMonthlyOmzet, 2, ',', '.') }}
                         </div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">Omzet Bulan Ini</div>
                     </div>
                     <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                         <div class="text-2xl font-bold text-gray-900 dark:text-green-400">
-                            Rp {{ number_format($myPaidAmount, 0, ',', '.') }}
+                            Rp {{ number_format($myPaidAmount, 2, ',', '.') }}
                         </div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">Sudah Terbayar</div>
                     </div>
                     <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                         <div class="text-2xl font-bold text-gray-900 dark:text-red-400">
-                            Rp {{ number_format($remainingPaid, 0, ',', '.') }}
+                            Rp {{ number_format($remainingPaid, 2, ',', '.') }}
                         </div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">Sisa Pembayaran Saya</div>
                     </div>

@@ -50,6 +50,11 @@
                         <input type="text" name="name" id="name"
                             class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             required value="{{ $user->name }}" autocomplete="off">
+                        @if ($errors->has('name'))
+                            <p class="mt-2 text-sm text-red-600 dark:text-red-500">
+                                <span class="font-medium">{{ $errors->updateProfile->first('name') }}</span>
+                            </p>
+                        @endif
                     </div>
                     <div class="col-span-6 sm:col-span-3">
                         <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -57,6 +62,11 @@
                         <input type="email" name="email" id="email"
                             class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             required value="{{ $user->email }}" autocomplete="off">
+                        @if ($errors->has('email'))
+                            <p class="mt-2 text-sm text-red-600 dark:text-red-500">
+                                <span class="font-medium">{{ $errors->first('email') }}</span>
+                            </p>
+                        @endif
                     </div>
                     <div class="col-span-6 sm:col-span-3">
                         <label for="file_input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -73,6 +83,11 @@
                         <p class="mt-2 text-sm text-gray-500 dark:text-gray-300" id="photo">
                             JPG,JPEG,PNG (MAX. 2MB).
                         </p>
+                        @if ($errors->has('photo'))
+                            <p class="mt-2 text-sm text-red-600 dark:text-red-500">
+                                <span class="font-medium">{{ $errors->first('photo') }}</span>
+                            </p>
+                        @endif
                     </div>
 
                     <div class="col-span-6 sm:col-full flex justify-end">

@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->enum('status', ['pending', 'approved', 'rejected', 'cancelled'])->default('pending');
             $table->dateTime('approved_at')->nullable();
             $table->text('rejection_reason')->nullable()->default(null);
+            $table->text('notes')->nullable()->default(null);
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('restrict');

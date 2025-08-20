@@ -25,6 +25,7 @@ class BookTransaction extends Model
         'approved_by',
         'approved_at',
         'rejection_reason',
+        'notes'
     ];
 
     public $sortable = [

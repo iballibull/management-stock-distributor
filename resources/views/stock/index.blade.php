@@ -333,7 +333,7 @@
                                     <div class="flex flex-col">
                                         <span class="text-sm text-gray-500 dark:text-gray-400">Harga</span>
                                         <span class="text-xl font-bold text-gray-900 dark:text-white">
-                                            Rp {{ number_format($book->price, 0, ',', '.') }}
+                                            Rp {{ number_format($book->price, 2, ',', '.') }}
                                         </span>
                                     </div>
                                 </div>
