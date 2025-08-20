@@ -2,9 +2,16 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Database\Seeders\Book\BookSeeder;
+use Database\Seeders\User\RoleSeeder;
+use Database\Seeders\User\UserSeeder;
+use Database\Seeders\Book\CategorySeeder;
+use Database\Seeders\Book\CurriculumSeeder;
+use Database\Seeders\Book\EducationLevelSeeder;
+use Database\Seeders\BookTransaction\SemesterSeeder;
+use Database\Seeders\BookTransaction\TransactionTypeSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,9 +22,20 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'test@example.com',
+        // ]);
+
+        $this->call([
+            RoleSeeder::class,
+            UserSeeder::class,
+            CategorySeeder::class,
+            CurriculumSeeder::class,
+            EducationLevelSeeder::class,
+            BookSeeder::class,
+            SemesterSeeder::class,
+            TransactionTypeSeeder::class
         ]);
     }
 }

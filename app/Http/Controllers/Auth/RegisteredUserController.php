@@ -2,24 +2,34 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Models\User;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\RedirectResponse;
+use App\Models\User\User;
+use App\Models\User\Invite;
+use Illuminate\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rules;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
-use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Auth\Events\Registered;
 
 class RegisteredUserController extends Controller
 {
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('auth.register');
+        // Tangkap token dan cari undangan
+        $invite = Invite::where('token', $request->token)->where('used', false)->first();
+
+        if (!$invite) {
+            abort(403, 'Token tidak valid.');
+        }
+
+        return view('auth.register', [
+            'invite' => $invite,
+        ]);
     }
 
     /**
@@ -27,24 +37,47 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, $token): RedirectResponse
     {
+
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'name' => 'required|string|max:255',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        $invite = Invite::where('token', $token)
+            ->where('used', false)
+            ->firstOrFail();
+
+        $user = User::withTrashed()->where('email', $invite->email)->first();
+
+        // jika user sebelumnya ada dan sudah dihapus 
+        if ($user) {
+            // update data dengan data terbaru 
+            $user->name = $request->name;
+            $user->password = Hash::make($request->password);
+            $user->role_id = $invite->role_id;
+
+            // user kembali di aktifkan
+            if ($user->trashed()) {
+                $user->restore();
+            }
+
+            $user->save();
+        } else {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $invite->email,
+                'password' => Hash::make($request->password),
+                'role_id' => $invite->role_id,
+            ]);
+        }
+
+        $invite->update(['used' => true]);
 
         event(new Registered($user));
-
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('dashboard'));
     }
 }
